@@ -74,6 +74,8 @@ function f(string $key, string $default = ''): string {
     global $vorlage;
     return htmlspecialchars($vorlage[$key] ?? $default);
 }
+
+[$jgMin, $jgMax] = schics_jahrgang_range();
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -118,7 +120,9 @@ function f(string $key, string $default = ''): string {
                     <div class="col-md-3"><label class="form-label">Stand *</label>
                         <input type="date" name="stand" class="form-control" value="<?= date('Y-m-d') ?>" required></div>
                     <div class="col-md-2"><label class="form-label">Jahrgang *</label>
-                        <input type="number" name="jahrgang" class="form-control" value="<?= f('jahrgang') ?>" required></div>
+                        <input type="number" name="jahrgang" class="form-control"
+                               value="<?= f('jahrgang') ?>"
+                               min="<?= (int)$jgMin ?>" max="<?= (int)$jgMax ?>" required></div>
                     <div class="col-md-4"><label class="form-label">Fach *</label>
                         <select name="fach" class="form-select" required>
                             <?php foreach (schics_faecher() as $fach): ?>

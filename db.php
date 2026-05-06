@@ -147,12 +147,32 @@ function schics_content_fields(): array {
     ];
 }
 
-function schics_faecher(): array {
+function schics_default_faecher(): array {
     return [
         'Deutsch', 'Mathematik', 'Englisch', 'Sachunterricht',
         'Gesellschaftswissenschaften', 'Naturwissenschaften',
         'Musik', 'Kunst', 'Sport',
     ];
+}
+
+// Fächerliste der Schule. Liegt als zeilenweise Text-Liste in den Settings.
+// Leer/unset → Defaults. Für die UI immer über diese Funktion gehen.
+function schics_faecher(): array {
+    $stored = schics_setting('faecher');
+    if ($stored === null || trim($stored) === '') {
+        return schics_default_faecher();
+    }
+    $list = array_map('trim', preg_split('/\R/', $stored));
+    $list = array_values(array_filter($list, fn($f) => $f !== ''));
+    return $list ?: schics_default_faecher();
+}
+
+function schics_jahrgang_range(): array {
+    $min = (int)(schics_setting('jahrgang_min', '1') ?? '1');
+    $max = (int)(schics_setting('jahrgang_max', '6') ?? '6');
+    if ($min < 1)    $min = 1;
+    if ($max < $min) $max = $min;
+    return [$min, $max];
 }
 
 function schics_quote_ident(string $name): string {

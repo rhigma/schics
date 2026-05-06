@@ -6,6 +6,7 @@ $pdo      = schics_db();
 $fach     = $_GET['fach'] ?? '';
 $jahrgang = $_GET['jahrgang'] ?? '';
 $fächer   = schics_faecher();
+[$jgMin, $jgMax] = schics_jahrgang_range();
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -41,7 +42,7 @@ $fächer   = schics_faecher();
                     <label for="jahrgang" class="form-label">Jahrgang</label>
                     <select name="jahrgang" id="jahrgang" class="form-select">
                         <option value="">–</option>
-                        <?php for ($i = 1; $i <= 10; $i++): ?>
+                        <?php for ($i = $jgMin; $i <= $jgMax; $i++): ?>
                             <option value="<?= $i ?>" <?= (string)$jahrgang === (string)$i ? 'selected' : '' ?>><?= $i ?></option>
                         <?php endfor; ?>
                     </select>

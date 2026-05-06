@@ -73,6 +73,8 @@ function p(string $key): string { return htmlspecialchars($_POST[$key] ?? ''); }
 function selected(string $key, string $value): string {
     return (($_POST[$key] ?? '') === $value) ? 'selected' : '';
 }
+
+[$jgMin, $jgMax] = schics_jahrgang_range();
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -115,7 +117,9 @@ function selected(string $key, string $value): string {
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">Jahrgang *</label>
-                        <input type="number" name="jahrgang" class="form-control" value="<?= p('jahrgang') ?>" required>
+                        <input type="number" name="jahrgang" class="form-control"
+                               value="<?= p('jahrgang') ?>"
+                               min="<?= (int)$jgMin ?>" max="<?= (int)$jgMax ?>" required>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Fach *</label>

@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/auth.php';
 schics_require_level(SCHICS_LEVEL_READ);
+[$jgMin, $jgMax] = schics_jahrgang_range();
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -50,7 +51,7 @@ schics_require_level(SCHICS_LEVEL_READ);
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Jahrgang</label>
-                    <input type="number" name="jahrgang" min="1" max="10" class="form-control" placeholder="optional">
+                    <input type="number" name="jahrgang" min="<?= (int)$jgMin ?>" max="<?= (int)$jgMax ?>" class="form-control" placeholder="optional">
                 </div>
             </form>
         </section>

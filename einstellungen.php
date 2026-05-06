@@ -7,10 +7,17 @@ $msgClass   = 'alert-success';
 $errors     = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $schoolName = trim((string)($_POST['school_name'] ?? ''));
-    $readPwd    = (string)($_POST['read_password']  ?? '');
-    $editPwd    = (string)($_POST['edit_password']  ?? '');
-    $adminPwd   = (string)($_POST['admin_password'] ?? '');
+    $schoolName  = trim((string)($_POST['school_name'] ?? ''));
+    $readPwd     = (string)($_POST['read_password']  ?? '');
+    $editPwd     = (string)($_POST['edit_password']  ?? '');
+    $adminPwd    = (string)($_POST['admin_password'] ?? '');
+    $jahrgangMin = filter_var($_POST['jahrgang_min'] ?? '', FILTER_VALIDATE_INT);
+    $jahrgangMax = filter_var($_POST['jahrgang_max'] ?? '', FILTER_VALIDATE_INT);
+    $faecherRaw  = (string)($_POST['faecher'] ?? '');
+    $faecherList = array_values(array_filter(
+        array_map('trim', preg_split('/\R/', $faecherRaw)),
+        fn($f) => $f !== ''
+    ));
 
     if ($schoolName === '')                 $errors[] = 'Schulname darf nicht leer sein.';
     if ($editPwd === '')                    $errors[] = 'Bearbeiten-Passwort darf nicht leer sein.';
@@ -20,11 +27,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($readPwd !== '' && ($readPwd === $editPwd || $readPwd === $adminPwd))
         $errors[] = 'Lese-Passwort darf nicht mit den anderen übereinstimmen.';
 
+    if ($jahrgangMin === false || $jahrgangMin < 1 || $jahrgangMin > 13)
+        $errors[] = 'Jahrgang von muss zwischen 1 und 13 liegen.';
+    if ($jahrgangMax === false || $jahrgangMax < 1 || $jahrgangMax > 13)
+        $errors[] = 'Jahrgang bis muss zwischen 1 und 13 liegen.';
+    if ($jahrgangMin !== false && $jahrgangMax !== false && $jahrgangMin > $jahrgangMax)
+        $errors[] = '„Jahrgang von" darf nicht größer als „Jahrgang bis" sein.';
+
+    if (!$faecherList) $errors[] = 'Es muss mindestens ein Fach geben.';
+
     if (!$errors) {
         schics_set_setting('school_name',    $schoolName);
         schics_set_setting('read_password',  $readPwd);
         schics_set_setting('edit_password',  $editPwd);
         schics_set_setting('admin_password', $adminPwd);
+        schics_set_setting('jahrgang_min',   (string)$jahrgangMin);
+        schics_set_setting('jahrgang_max',   (string)$jahrgangMax);
+        schics_set_setting('faecher',        implode("\n", $faecherList));
         $message = 'Einstellungen gespeichert.';
     }
 }
@@ -33,6 +52,9 @@ $schoolName = schics_school_name();
 $readPwd    = (string)schics_setting('read_password',  '');
 $editPwd    = (string)schics_setting('edit_password',  '');
 $adminPwd   = (string)schics_setting('admin_password', '');
+[$jahrgangMin, $jahrgangMax] = schics_jahrgang_range();
+$faecherList = schics_faecher();
+$faecherText = implode("\n", $faecherList);
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -68,6 +90,30 @@ $adminPwd   = (string)schics_setting('admin_password', '');
                         <label class="form-label">Name der Schule *</label>
                         <input type="text" name="school_name" class="form-control"
                                value="<?= htmlspecialchars($schoolName) ?>" required>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 class="section-title">Curriculum-Vorgaben</h2>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Jahrgang von *</label>
+                        <input type="number" name="jahrgang_min" class="form-control"
+                               value="<?= (int)$jahrgangMin ?>" min="1" max="13" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Jahrgang bis *</label>
+                        <input type="number" name="jahrgang_max" class="form-control"
+                               value="<?= (int)$jahrgangMax ?>" min="1" max="13" required>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label">Fächer *</label>
+                        <textarea name="faecher" class="form-control" rows="9"><?= htmlspecialchars($faecherText) ?></textarea>
+                        <div class="form-text">
+                            Ein Fach pro Zeile. Bestehende Curricula behalten ihren Fach-Namen,
+                            auch wenn er hier umbenannt oder entfernt wird.
+                        </div>
                     </div>
                 </div>
             </section>
