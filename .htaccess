@@ -1,0 +1,11 @@
+# Verhindert das direkte Auslesen von config.php über das Web,
+# falls der Server PHP nicht ausführt (Defense in Depth).
+<FilesMatch "^(config\.php|config\.example\.php)$">
+    <RequireAll>
+        Require all denied
+    </RequireAll>
+    <IfModule !mod_authz_core.c>
+        Order deny,allow
+        Deny from all
+    </IfModule>
+</FilesMatch>

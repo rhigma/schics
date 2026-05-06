@@ -1,0 +1,11 @@
+# Schützt das Datenverzeichnis vor Zugriffen über das Web.
+# Apache 2.4
+<RequireAll>
+    Require all denied
+</RequireAll>
+
+# Apache 2.2 Fallback
+<IfModule !mod_authz_core.c>
+    Order deny,allow
+    Deny from all
+</IfModule>

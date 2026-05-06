@@ -1,0 +1,18 @@
+# Per-Deployment-Konfiguration (kann Passwörter enthalten)
+config.php
+
+# Laufzeit-Daten und SQLite-Datei
+data/curricula.db
+data/curricula.db-shm
+data/curricula.db-wal
+data/sessions/
+
+# Lokale PHP-Konfiguration (enthält absolute Windows-Pfade)
+php.ini
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
