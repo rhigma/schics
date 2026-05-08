@@ -56,6 +56,20 @@ $adminPwd   = (string)schics_setting('admin_password', '');
 $faecherList = schics_faecher();
 $faecherText = implode("\n", $faecherList);
 $flashMsg    = schics_consume_flash();
+
+require_once __DIR__ . '/helpers.php';
+$localSha    = schics_setting('last_update_sha');
+$localAt     = schics_setting('last_update_at');
+$remoteHead  = schics_remote_head();
+if ($remoteHead === null) {
+    $updateStatus = 'unknown_remote';
+} elseif ($localSha === null) {
+    $updateStatus = 'unknown_local';
+} elseif ($localSha === $remoteHead['sha']) {
+    $updateStatus = 'current';
+} else {
+    $updateStatus = 'available';
+}
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -159,10 +173,55 @@ $flashMsg    = schics_consume_flash();
                 wird eine zeitgestempelte DB-Sicherung in <code>data/backups/</code>
                 abgelegt (es werden die letzten 10 Sicherungen behalten).
             </p>
+
+            <?php
+            $remoteShort = $remoteHead ? substr($remoteHead['sha'], 0, 7) : null;
+            $localShort  = $localSha   ? substr($localSha,         0, 7) : null;
+            $remoteDate  = $remoteHead && $remoteHead['date'] !== ''
+                ? date('d.m.Y H:i', strtotime($remoteHead['date'])) : null;
+            $remoteFirstLine = $remoteHead
+                ? trim(strtok((string)$remoteHead['message'], "\n")) : '';
+            $localDate   = $localAt ? date('d.m.Y H:i', strtotime((string)$localAt)) : null;
+            ?>
+
+            <?php if ($updateStatus === 'current'): ?>
+                <div class="alert alert-success">
+                    Sie sind auf dem aktuellsten Stand
+                    (Commit <code><?= htmlspecialchars($localShort) ?></code>).
+                    <?php if ($localDate): ?>
+                        Zuletzt aktualisiert am <?= htmlspecialchars($localDate) ?>.
+                    <?php endif; ?>
+                </div>
+            <?php elseif ($updateStatus === 'available'): ?>
+                <div class="alert alert-warning">
+                    Update verfügbar: <code><?= htmlspecialchars($remoteShort) ?></code>
+                    <?php if ($remoteDate): ?> (<?= htmlspecialchars($remoteDate) ?>)<?php endif; ?>.
+                    Aktuell installiert: <code><?= htmlspecialchars($localShort) ?></code>.
+                    <?php if ($remoteFirstLine !== ''): ?>
+                        <div class="text-muted" style="font-size:.9rem; margin-top:.25rem;">
+                            „<?= htmlspecialchars($remoteFirstLine) ?>"
+                        </div>
+                    <?php endif; ?>
+                </div>
+            <?php elseif ($updateStatus === 'unknown_local'): ?>
+                <div class="alert alert-info">
+                    Diese Installation hat sich noch nie selbst aktualisiert.
+                    Aktueller Stand auf GitHub: <code><?= htmlspecialchars($remoteShort) ?></code><?php if ($remoteDate): ?> (<?= htmlspecialchars($remoteDate) ?>)<?php endif; ?>.
+                </div>
+            <?php else: /* unknown_remote */ ?>
+                <div class="alert alert-secondary">
+                    Konnte den Stand auf GitHub nicht prüfen
+                    (kein Internet, GitHub-API-Limit oder Repo nicht erreichbar).
+                    Update lässt sich trotzdem auslösen.
+                </div>
+            <?php endif; ?>
+
             <form method="post" action="update.php"
                   onsubmit="return confirm('Programmdateien jetzt von GitHub aktualisieren? Die Datenbank wird vorher gesichert.');">
                 <input type="hidden" name="confirm" value="yes">
-                <button class="btn btn-primary">Jetzt von GitHub aktualisieren</button>
+                <button class="btn btn-primary" <?= $updateStatus === 'current' ? 'disabled' : '' ?>>
+                    <?= $updateStatus === 'current' ? 'Bereits aktuell' : 'Jetzt von GitHub aktualisieren' ?>
+                </button>
             </form>
         </section>
     </main>

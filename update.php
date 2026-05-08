@@ -117,6 +117,15 @@ try {
     schics_update_rrmdir($tmpExtract);
     @unlink($tmpZip);
 
+    // 7. Aktuellen Remote-SHA festhalten, damit der Versions-Check in
+    // einstellungen.php den Stand erkennt.
+    require_once __DIR__ . '/helpers.php';
+    $head = schics_remote_head();
+    if ($head !== null) {
+        schics_set_setting('last_update_sha', $head['sha']);
+    }
+    schics_set_setting('last_update_at', date('c'));
+
     schics_flash('✅ Update erfolgreich. ' . $count . ' Dateien aktualisiert. Eine DB-Sicherung wurde unter data/backups/ abgelegt.');
 } catch (Throwable $e) {
     @unlink($tmpZip);

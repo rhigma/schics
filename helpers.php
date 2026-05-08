@@ -33,6 +33,42 @@ function schics_curriculum_cells(): array {
     ];
 }
 
+// GitHub-Repo, aus dem das Selbst-Update gezogen wird. An einer Stelle,
+// damit update.php und der Versions-Check in einstellungen.php denselben
+// Wert nutzen.
+function schics_update_repo(): string {
+    return 'rhigma/schics';
+}
+
+// Liest den HEAD-Commit des main-Branches via GitHub-API. Gibt assoziatives
+// Array mit sha/message/date zurück oder null, wenn der Lookup scheitert
+// (kein curl, kein Netz, Rate-Limit, …) — Aufrufer behandelt null als
+// „Status unbekannt".
+function schics_remote_head(): ?array {
+    if (!extension_loaded('curl')) return null;
+    $url = 'https://api.github.com/repos/' . schics_update_repo() . '/branches/main';
+    $ch  = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_CONNECTTIMEOUT => 5,
+        CURLOPT_TIMEOUT        => 10,
+        CURLOPT_USERAGENT      => 'schics-update/1.0',
+        CURLOPT_HTTPHEADER     => ['Accept: application/vnd.github+json'],
+    ]);
+    $body = curl_exec($ch);
+    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    if ($body === false || $code !== 200) return null;
+    $data = json_decode((string)$body, true);
+    if (!is_array($data) || !isset($data['commit']['sha'])) return null;
+    return [
+        'sha'     => (string)$data['commit']['sha'],
+        'message' => (string)($data['commit']['commit']['message']         ?? ''),
+        'date'    => (string)($data['commit']['commit']['author']['date']  ?? ''),
+    ];
+}
+
 // Felder, die die Suche auf der Startseite durchsucht.
 // Schlüssel = DB-Spalte, Wert = lesbares Label für die Snippet-Anzeige.
 function schics_search_fields(): array {
