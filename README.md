@@ -92,11 +92,12 @@ muss auf einem echten Apache verifiziert werden.
 | `einstellungen.php`  | Schulname und Passwörter ändern (Admin) |
 | `login.php` / `logout.php` | Anmelden / Abmelden |
 | `nav.php`            | Gemeinsame Navigationsleiste |
-| `index.php` / `ajax_suche.php` | Startseite mit Suche |
+| `index.php`          | Startseite: Übersichts-Raster Fach × Jahrgang |
+| `suchen.php` / `ajax_suche.php` | Suche nach SchiCs |
 | `detail.php`         | Detailansicht des aktuellen Stands |
 | `alle_versionen.php` | Versionshistorie eines SchiCs |
 | `dashboard.php` / `dashboard_data.php` | Querschnittsauswertung |
-| `admin.php`          | Neuen SchiC-Eintrag anlegen (Bearbeiten) |
+| `neuer_schic.php`    | Neuen SchiC-Eintrag anlegen (Bearbeiten) |
 | `neue_version.php`   | Neue Version eines vorhandenen SchiCs |
 | `sortieren.php` / `update_reihenfolge.php` | Reihenfolge bearbeiten |
 | `config.example.php` | Optionale Überschreibungen (nur für Spezialfälle) |

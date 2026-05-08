@@ -18,7 +18,7 @@ $active = fn(string $page) => $currentPage === $page ? ' class="active"' : '';
             <li><a href="suchen.php"<?= $active('suchen.php') ?>>Suchen</a></li>
             <li><a href="dashboard.php"<?= $active('dashboard.php') ?>>Quer-/Längsschnitte</a></li>
             <?php if ($canEdit): ?>
-                <li><a href="admin.php"<?= $active('admin.php') ?>>Neuer Eintrag</a></li>
+                <li><a href="neuer_schic.php"<?= $active('neuer_schic.php') ?>>Neuer Eintrag</a></li>
                 <li><a href="sortieren.php"<?= $active('sortieren.php') ?>>Sortieren</a></li>
             <?php endif; ?>
             <?php if ($canAdmin): ?>
