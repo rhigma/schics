@@ -989,15 +989,13 @@ textarea.form-control { min-height: 84px; }
 }
 
 /* Tooltip beim Hover über das Chip — Thema fett + Übergreifende Themen.
-   Default-Position (oben/zentriert) wird bei mouseenter via JS überschrieben,
-   damit der Tooltip am Viewport-Rand nach unten bzw. zur Seite ausweicht. */
+   position:fixed, weil der `.overview-scroll`-Container per overflow clipt.
+   Position und Sichtbarkeit werden komplett von JS gesteuert. */
 .chip-tooltip {
-    position: absolute;
-    z-index: 30;
-    left: 50%;
-    bottom: 100%;
-    margin-bottom: 6px;
-    transform: translateX(-50%);
+    position: fixed;
+    z-index: 1000;
+    top: 0;
+    left: 0;
     width: max-content;
     max-width: min(22rem, 80vw);
     background: var(--color-surface);
@@ -1018,8 +1016,7 @@ textarea.form-control { min-height: 84px; }
     pointer-events: none;
     transition: opacity .12s;
 }
-.overview-chip:hover .chip-tooltip,
-.overview-chip:focus-visible .chip-tooltip {
+.chip-tooltip.is-open {
     opacity: 1;
 }
 .chip-tooltip__thema {

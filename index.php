@@ -124,56 +124,42 @@ $themenListe = schics_uebergreifende_themen();
         const chips   = document.querySelectorAll('.overview-chip');
         if (!grid) return;
 
-        function positionTooltip(chip) {
-            const tt = chip.querySelector('.chip-tooltip');
-            if (!tt) return;
-            tt.style.left = '';
-            tt.style.right = '';
-            tt.style.top = '';
-            tt.style.bottom = '';
-            tt.style.marginTop = '';
-            tt.style.marginBottom = '';
-            tt.style.transform = '';
-
+        function positionTooltip(chip, tt) {
             const chipRect = chip.getBoundingClientRect();
             const ttRect   = tt.getBoundingClientRect();
             const margin   = 8;
+            const gap      = 6;
             const vw       = window.innerWidth;
             const vh       = window.innerHeight;
 
             const spaceAbove = chipRect.top;
             const spaceBelow = vh - chipRect.bottom;
-            if (spaceAbove >= ttRect.height + 12 || spaceAbove >= spaceBelow) {
-                tt.style.bottom = '100%';
-                tt.style.marginBottom = '6px';
-                tt.style.top = 'auto';
+            let top;
+            if (spaceAbove >= ttRect.height + gap + margin || spaceAbove >= spaceBelow) {
+                top = chipRect.top - ttRect.height - gap;
             } else {
-                tt.style.top = '100%';
-                tt.style.marginTop = '6px';
-                tt.style.bottom = 'auto';
+                top = chipRect.bottom + gap;
             }
+            if (top < margin) top = margin;
+            if (top + ttRect.height > vh - margin) top = vh - margin - ttRect.height;
 
-            const chipCenter = chipRect.left + chipRect.width / 2;
-            const halfTt     = ttRect.width / 2;
-            if (chipCenter - halfTt < margin) {
-                tt.style.left  = (margin - chipRect.left) + 'px';
-                tt.style.right = 'auto';
-                tt.style.transform = 'none';
-            } else if (chipCenter + halfTt > vw - margin) {
-                tt.style.left  = 'auto';
-                tt.style.right = (margin - (vw - chipRect.right)) + 'px';
-                tt.style.transform = 'none';
-            } else {
-                tt.style.left  = '50%';
-                tt.style.right = 'auto';
-                tt.style.transform = 'translateX(-50%)';
-            }
+            let left = chipRect.left + chipRect.width / 2 - ttRect.width / 2;
+            if (left < margin)                       left = margin;
+            if (left + ttRect.width > vw - margin)   left = vw - margin - ttRect.width;
+
+            tt.style.top  = top  + 'px';
+            tt.style.left = left + 'px';
         }
 
         chips.forEach(c => {
-            if (!c.querySelector('.chip-tooltip')) return;
-            c.addEventListener('mouseenter', () => positionTooltip(c));
-            c.addEventListener('focus',      () => positionTooltip(c));
+            const tt = c.querySelector('.chip-tooltip');
+            if (!tt) return;
+            const show = () => { positionTooltip(c, tt); tt.classList.add('is-open'); };
+            const hide = () => { tt.classList.remove('is-open'); };
+            c.addEventListener('mouseenter', show);
+            c.addEventListener('mouseleave', hide);
+            c.addEventListener('focus',      show);
+            c.addEventListener('blur',       hide);
         });
 
         if (!pills.length) return;
