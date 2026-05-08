@@ -988,13 +988,16 @@ textarea.form-control { min-height: 84px; }
     outline: none;
 }
 
-/* Tooltip beim Hover über das Chip — Thema fett + Übergreifende Themen. */
+/* Tooltip beim Hover über das Chip — Thema fett + Übergreifende Themen.
+   Default-Position (oben/zentriert) wird bei mouseenter via JS überschrieben,
+   damit der Tooltip am Viewport-Rand nach unten bzw. zur Seite ausweicht. */
 .chip-tooltip {
     position: absolute;
     z-index: 30;
     left: 50%;
-    bottom: calc(100% + 6px);
-    transform: translateX(-50%) translateY(4px);
+    bottom: 100%;
+    margin-bottom: 6px;
+    transform: translateX(-50%);
     width: max-content;
     max-width: min(22rem, 80vw);
     background: var(--color-surface);
@@ -1013,12 +1016,11 @@ textarea.form-control { min-height: 84px; }
     gap: .15rem;
     opacity: 0;
     pointer-events: none;
-    transition: opacity .12s, transform .12s;
+    transition: opacity .12s;
 }
 .overview-chip:hover .chip-tooltip,
 .overview-chip:focus-visible .chip-tooltip {
     opacity: 1;
-    transform: translateX(-50%) translateY(0);
 }
 .chip-tooltip__thema {
     font-weight: 600;
@@ -1037,25 +1039,6 @@ textarea.form-control { min-height: 84px; }
     color: var(--color-text);
     word-break: break-word;
     white-space: normal;
-}
-
-/* Erste/letzte Spalten: Tooltip nicht aus dem Bildschirm rutschen lassen. */
-.overview-grid tbody tr td:nth-child(2) .chip-tooltip {
-    left: 0;
-    transform: translateX(0) translateY(4px);
-}
-.overview-grid tbody tr td:nth-child(2) .overview-chip:hover .chip-tooltip,
-.overview-grid tbody tr td:nth-child(2) .overview-chip:focus-visible .chip-tooltip {
-    transform: translateX(0) translateY(0);
-}
-.overview-grid tbody tr td:last-child .chip-tooltip {
-    left: auto;
-    right: 0;
-    transform: translateX(0) translateY(4px);
-}
-.overview-grid tbody tr td:last-child .overview-chip:hover .chip-tooltip,
-.overview-grid tbody tr td:last-child .overview-chip:focus-visible .chip-tooltip {
-    transform: translateX(0) translateY(0);
 }
 
 /* Filter-Leiste: Pills für die übergreifenden Themen aus RLP Teil B. */
