@@ -77,7 +77,8 @@ $flash         = schics_consume_flash();
             <div class="actions">
                 <a href="index.php" class="btn btn-secondary">← Übersicht</a>
                 <a href="alle_versionen.php?schic_id=<?= (int)$schic_id ?>" class="btn btn-outline-secondary">Alle Versionen</a>
-                <button type="button" onclick="window.print()" class="btn btn-outline-primary">🖨️ Drucken / PDF</button>
+                <a href="pdf.php?schic_id=<?= (int)$schic_id ?>&amp;dl=1" class="btn btn-outline-primary">📥 PDF herunterladen</a>
+                <button type="button" onclick="window.print()" class="btn btn-outline-secondary">🖨️ Drucken</button>
                 <?php if ($canEdit): ?>
                     <a href="neue_version.php?from_id=<?= (int)$eintrag['id'] ?>" class="btn btn-primary">Neue Version</a>
                 <?php endif; ?>

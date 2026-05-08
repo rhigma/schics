@@ -40,14 +40,15 @@ Every row in `curricula` is a **versioned snapshot** of one curriculum entry. `s
 - `nav.php` — shared navigation. Edit/Admin links appear only for matching levels. Include from inside `<body>` after the `require_level` call.
 - `setup.php` — first-run wizard. Self-redirects to `einstellungen.php` once setup is done.
 - `einstellungen.php` — admin page for school name, passwords, year range, and `Fächer` list.
-- `druck.php` — printable multi-SchiC view. Same filter grammar as `ajax_suche.php` (`1-4`, `5,6`, `>=3`, `<=6`, `4`) but reads from `$_GET` so the URL is bookmarkable. One sheet per A4-landscape page via `@media print` rules in `style.css`.
+- `druck.php` — printable multi-SchiC view. Same filter grammar as `ajax_suche.php` (`1-4`, `5,6`, `>=3`, `<=6`, `4`) but reads from `$_GET` so the URL is bookmarkable. One sheet per A4-landscape page via `@media print` rules in `style.css`. Has both a "PDF herunterladen"-link (forwards filters to `pdf.php`) and a "Drucken"-button (`window.print()`).
+- `pdf.php` / `_curriculum_pdf.php` — server-side PDF export via mPDF (`vendor/mpdf/mpdf`). `pdf.php?schic_id=N` exports the latest version of one SchiC; without `schic_id` it accepts the same `fach`/`jahrgang`/`suchbegriff` filter grammar as `druck.php` and emits one A4-landscape page per matching SchiC. The 11 content cells use a `<table>` layout with `colspan`/`rowspan` instead of CSS Grid, because mPDF doesn't reliably render CSS Grid. Cell metadata still comes from `schics_curriculum_cells()` so view/form/PDF stay in sync. mPDF's tmp/font cache lives under `data/mpdf_tmp/` (preserved across self-update). `?dl=1` forces a download instead of inline preview.
 - `update.php` — ADMIN-only self-update. Pulls a ZIP snapshot of `rhigma/schics@main` from `codeload.github.com` via cURL, extracts to `data/_update_tmp/`, and recursively copies over the project root **except** the `data/` directory (which holds the SQLite DB, sessions, and backups). Before overwriting, the current `curricula.db` is copied to `data/backups/curricula_<timestamp>.db`; only the 10 most recent backups are kept. After a successful update, the new HEAD-SHA is queried via the GitHub API (`schics_remote_head()` in `helpers.php`) and stored as `last_update_sha` / `last_update_at` in the `settings` table. The settings page reads those keys to show "current / update available / unknown" before the form. POST-only with `confirm=yes`. The `<form action="update.php">` lives at the bottom of `einstellungen.php`. Requires `curl` and `zip` PHP extensions (both on Strato by default).
 
 ### Page → required level
 
 | Page | Level |
 |---|---|
-| `index.php`, `ajax_suche.php`, `detail.php`, `alle_versionen.php`, `dashboard.php`, `dashboard_data.php`, `druck.php` | READ |
+| `index.php`, `ajax_suche.php`, `detail.php`, `alle_versionen.php`, `dashboard.php`, `dashboard_data.php`, `druck.php`, `pdf.php` | READ |
 | `admin.php` (new SchiC entry), `neue_version.php`, `sortieren.php`, `update_reihenfolge.php` | EDIT |
 | `einstellungen.php`, `update_status.php`, `update.php` | ADMIN |
 
@@ -58,7 +59,7 @@ Note: `admin.php` is the "new SchiC entry" form (EDIT-level), despite the filena
 - Output is always rendered through `htmlspecialchars()` and (for multi-line content) `nl2br(htmlspecialchars())`. Preserve this when adding rendering.
 - Database column names contain umlauts (`fächerverbindung`, `heterogenität`, `übergreifende_themen`, `änderungskommentar`). Quote them in raw SQL with `schics_quote_ident()` or hand-quote with `"…"` in SQLite. Named PDO parameters with umlaut keys work fine.
 - The 11 SchiC content fields are always rendered as a curriculum-sheet grid (mirrors the paper Vorlage). Read pages include `_curriculum_view.php`; edit pages include `_curriculum_form.php`. Cell metadata lives in `schics_curriculum_cells()` — adding/renaming a content field means: add the DB column, update the cells helper, update the INSERT in `admin.php` and `neue_version.php`. Don't render the sheet inline.
-- The filter grammar for searching SchiCs (`1-4`, `5,6`, `>=3`, `<=6`, `4`) is duplicated in `ajax_suche.php` (POST) and `druck.php` (GET). Keep them in sync if the grammar changes.
+- The filter grammar for searching SchiCs (`1-4`, `5,6`, `>=3`, `<=6`, `4`) is duplicated in `ajax_suche.php` (POST), `druck.php` (GET), and `pdf.php` (GET). Keep all three in sync if the grammar changes.
 - Print output uses `@media print` rules in `assets/style.css` (A4 landscape, one sheet per page). Pages that should print well include `<header class="print-header">` and `<footer class="print-footer">` — both are screen-hidden and print-only.
 - The `Fächer` list and the year range are per-school, stored in `settings`. Always go through `schics_faecher()` and `schics_jahrgang_range()` — never hardcode either, and never re-declare the `Fächer` list inline.
 - Content-column names that come from `$_GET`/`$_POST` (only `dashboard_data.php`) MUST be validated against `schics_content_fields()` before being interpolated into SQL.
@@ -68,6 +69,7 @@ Note: `admin.php` is the "new SchiC entry" form (EDIT-level), despite the filena
 - `reihenfolge` is a per-SchiC property, not per-version. All versions of the same `schic_id` share the rank. `update_reihenfolge.php` therefore updates by `schic_id` (not `id`), and `neue_version.php` carries the rank forward from the existing version line. `sortieren.php` and the cross-section views (`dashboard_data.php`, `ajax_suche.php`) only show the latest version per `schic_id` (`INNER JOIN ... MAX(id)`).
 - Search highlighting on the start page (`ajax_suche.php`) renders a snippet via `schics_snippet()` (in `helpers.php`) when a `suchbegriff` is set. Searched fields live in `schics_search_fields()` — keep that list in sync if you add searchable columns.
 - The schema migration (`schics_db_migrate()` in `db.php`) runs on every connection — keep it idempotent. Currently it drops obsolete `gremium_*` columns and normalises stale `status` values to `Entwurf`.
+- `vendor/` is **committed to the repo on purpose**, because the Strato deployment is "upload the directory" — no `composer install` step on the host. Keep `composer.json`/`composer.lock` and the generated `vendor/` in sync. Currently bundled: `mpdf/mpdf` (server-side PDF export). Required PHP extensions for mPDF on Strato: `mbstring`, `gd`, `zip` (all enabled by default). After every `composer install`/`update`, run `tools/trim-vendor.ps1` to drop ~70 MB of fonts mPDF bundles for non-Latin scripts (CJK, Arabic, Burmese …) before committing — we only render German.
 
 ### Things not to do
 

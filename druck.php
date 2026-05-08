@@ -78,8 +78,14 @@ $schoolName = schics_school_name();
     <link href="assets/style.css" rel="stylesheet">
 </head>
 <body class="druck">
+    <?php
+        $pdfQuery = $_GET;
+        unset($pdfQuery['dl']);
+        $pdfHref  = 'pdf.php?' . http_build_query($pdfQuery + ['dl' => 1]);
+    ?>
     <div class="druck-toolbar">
-        <button type="button" onclick="window.print()" class="btn btn-primary">🖨️ Drucken / Als PDF speichern</button>
+        <a href="<?= htmlspecialchars($pdfHref) ?>" class="btn btn-primary">📥 PDF herunterladen</a>
+        <button type="button" onclick="window.print()" class="btn btn-outline-secondary">🖨️ Drucken</button>
         <a href="javascript:history.back()" class="btn btn-secondary">Zurück</a>
         <span class="text-muted"><?= count($einträge) ?> Einträge</span>
     </div>

@@ -9,6 +9,7 @@ data/sessions/
 data/backups/
 data/_update.zip
 data/_update_tmp/
+data/mpdf_tmp/
 
 # Lokale PHP-Konfiguration (enthält absolute Windows-Pfade)
 php.ini
