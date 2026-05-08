@@ -77,63 +77,39 @@ $flash         = schics_consume_flash();
             <div class="actions">
                 <a href="index.php" class="btn btn-secondary">← Übersicht</a>
                 <a href="alle_versionen.php?schic_id=<?= (int)$schic_id ?>" class="btn btn-outline-secondary">Alle Versionen</a>
+                <button type="button" onclick="window.print()" class="btn btn-outline-primary">🖨️ Drucken / PDF</button>
                 <?php if ($canEdit): ?>
                     <a href="neue_version.php?from_id=<?= (int)$eintrag['id'] ?>" class="btn btn-primary">Neue Version</a>
                 <?php endif; ?>
             </div>
         </div>
 
-        <section class="section">
-            <h2 class="section-title">Allgemeines</h2>
-            <div class="field-grid">
-                <?= schics_field('Fach',           $eintrag['fach']) ?>
-                <?= schics_field('Jahrgang',       (string)$eintrag['jahrgang']) ?>
-                <?= schics_field('Umfang',         $eintrag['umfang']) ?>
-                <?= schics_field('Reihenfolge',    (string)$eintrag['reihenfolge']) ?>
-                <?= schics_field('Stand',          $eintrag['stand']) ?>
-                <?= schics_field('Version',        $eintrag['version']) ?>
-            </div>
-        </section>
+        <header class="print-header">
+            <?= htmlspecialchars(schics_school_name()) ?> &ndash; Schulinternes Curriculum
+        </header>
 
-        <section class="section section--rlp-a">
-            <h2 class="section-title">Rahmenlehrplan A · Fachübergreifende Aspekte</h2>
-            <div class="field-grid">
-                <?= schics_field('Fächerverbindende Schwerpunkte',                $eintrag['fächerverbindung'],   true) ?>
-                <?= schics_field('Heterogenität / Inklusion',                     $eintrag['heterogenität'],      true) ?>
-                <?= schics_field('Schulprofil / Pädagogische Schwerpunktsetzung', $eintrag['schulprofil'],        true) ?>
-                <?= schics_field('Lebensweltbezug',                               $eintrag['lebensweltbezug'],    true) ?>
-                <?= schics_field('Kooperationen und außerschulische Lernorte',    $eintrag['kooperationen'],      true) ?>
-                <?= schics_field('Lernberatung und Leistungsbewertung',           $eintrag['leistungsbewertung'], true) ?>
-            </div>
-            <a class="pdf-link" href="rlps/Teil_A_2015_11_16.pdf" target="_blank">📄 Rahmenlehrplan Teil A (PDF)</a>
-        </section>
+        <?php $values = $eintrag; include __DIR__ . '/_curriculum_view.php'; ?>
 
-        <section class="section section--rlp-b">
-            <h2 class="section-title">Rahmenlehrplan B · Querschnittsaufgaben</h2>
-            <div class="field-grid">
-                <?= schics_field('Sprachbildung',         $eintrag['sprachbildung'],         true) ?>
-                <?= schics_field('Medienbildung',         $eintrag['medienbildung'],         true) ?>
-                <?= schics_field('Methoden und Arbeitstechniken', $eintrag['methoden'],      true) ?>
-                <?= schics_field('Übergreifende Themen',  $eintrag['übergreifende_themen'],  true) ?>
-            </div>
-            <a class="pdf-link" href="rlps/Teil_B_2015_11_10.pdf" target="_blank">📄 Rahmenlehrplan Teil B (PDF)</a>
-        </section>
-
-        <section class="section section--rlp-c">
-            <h2 class="section-title">Rahmenlehrplan C · Kompetenzen</h2>
-            <div class="field-grid">
-                <?= schics_field('Kompetenzen und Konkretisierung', $eintrag['kompetenzen'], true) ?>
-            </div>
-            <?php if ($link_c): ?>
-                <a class="pdf-link" href="rlps/<?= htmlspecialchars($link_c) ?>" target="_blank">
-                    📄 Rahmenlehrplan Teil C – <?= htmlspecialchars($eintrag['fach']) ?> (PDF)
-                </a>
+        <footer class="print-footer">
+            Version <?= htmlspecialchars($eintrag['version']) ?>
+            &middot; Status <?= htmlspecialchars($eintrag['status']) ?>
+            <?php if (!empty($eintrag['bearbeitet_von'])): ?>
+                &middot; Bearbeitet von <?= htmlspecialchars($eintrag['bearbeitet_von']) ?>
             <?php endif; ?>
-        </section>
+        </footer>
+
+        <div class="curriculum-pdfs">
+            <a class="pdf-link" href="rlps/Teil_A_2015_11_16.pdf" target="_blank">📄 Rahmenlehrplan Teil A</a>
+            <a class="pdf-link" href="rlps/Teil_B_2015_11_10.pdf" target="_blank">📄 Rahmenlehrplan Teil B</a>
+            <?php if ($link_c): ?>
+                <a class="pdf-link" href="rlps/<?= htmlspecialchars($link_c) ?>" target="_blank">📄 Rahmenlehrplan Teil C – <?= htmlspecialchars($eintrag['fach']) ?></a>
+            <?php endif; ?>
+        </div>
 
         <section class="section">
             <h2 class="section-title">Bearbeitung</h2>
             <div class="field-grid">
+                <?= schics_field('Reihenfolge', (string)$eintrag['reihenfolge']) ?>
                 <?php if (!empty($eintrag['bearbeitet_von'])): ?>
                     <?= schics_field('Bearbeitet von', $eintrag['bearbeitet_von']) ?>
                 <?php endif; ?>

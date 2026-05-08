@@ -33,16 +33,19 @@ Every row in `curricula` is a **versioned snapshot** of one curriculum entry. `s
 
 - `db.php` — `schics_config()` (loads optional `config.php` once), `schics_db()` (PDO connection + schema bootstrap + idempotent migrations), `schics_setting()` / `schics_set_setting()` (key/value access to the `settings` table), `schics_setup_done()`, `schics_school_name()`, `schics_faecher()`, `schics_default_faecher()`, `schics_jahrgang_range()`, `schics_content_fields()` (whitelist for column names that come from user input), `schics_quote_ident()`. Every page that touches the database goes through `schics_db()` — no inline PDO construction.
 - `auth.php` — three-level access model. Levels are `SCHICS_LEVEL_NONE < READ < EDIT < ADMIN` and **hierarchical**: a higher password also grants lower-level access. `schics_require_level($n)` is the gatekeeper at the top of every page; on AJAX/JSON requests it returns 401 instead of redirecting to `login.php`. Read access is open when `read_password` is `''` in settings. If the setup wizard hasn't been completed yet, `schics_require_level()` redirects to `setup.php`. Also exposes `schics_flash()` / `schics_consume_flash()` for one-shot status messages across redirects.
-- `helpers.php` — small UI helpers shared across read pages: `schics_status_class()`, `schics_status_badge()`, `schics_field()` (label + value, optionally multi-line via `nl2br`).
+- `helpers.php` — small UI helpers shared across pages: `schics_status_class()`, `schics_status_badge()`, `schics_field()` (label + value, optionally multi-line via `nl2br`), `schics_curriculum_cells()` (single source of truth for the 11 SchiC content cells: grid position, A/B/C colour group, title, DB column).
+- `_curriculum_view.php` / `_curriculum_form.php` — partials that render the curriculum-sheet grid (the on-screen and printable version of the paper Vorlage). Both pull their cell list from `schics_curriculum_cells()`. Caller sets `$values` (assoc array keyed by DB column) before `include`. The form variant additionally needs to be wrapped in a `<form>` and the page must load `assets/curriculum.js`.
+- `assets/curriculum.js` — auto-shrinks the font-size of textareas marked `data-shrink` when content overflows the cell, then flags them `is-overfull` (red tint) once the minimum size is reached. This is the visual "you're writing too much for the paper SchiC" signal.
 - `nav.php` — shared navigation. Edit/Admin links appear only for matching levels. Include from inside `<body>` after the `require_level` call.
 - `setup.php` — first-run wizard. Self-redirects to `einstellungen.php` once setup is done.
 - `einstellungen.php` — admin page for school name, passwords, year range, and `Fächer` list.
+- `druck.php` — printable multi-SchiC view. Same filter grammar as `ajax_suche.php` (`1-4`, `5,6`, `>=3`, `<=6`, `4`) but reads from `$_GET` so the URL is bookmarkable. One sheet per A4-landscape page via `@media print` rules in `style.css`.
 
 ### Page → required level
 
 | Page | Level |
 |---|---|
-| `index.php`, `ajax_suche.php`, `detail.php`, `alle_versionen.php`, `dashboard.php`, `dashboard_data.php` | READ |
+| `index.php`, `ajax_suche.php`, `detail.php`, `alle_versionen.php`, `dashboard.php`, `dashboard_data.php`, `druck.php` | READ |
 | `admin.php` (new SchiC entry), `neue_version.php`, `sortieren.php`, `update_reihenfolge.php` | EDIT |
 | `einstellungen.php`, `update_status.php` | ADMIN |
 
@@ -52,6 +55,9 @@ Note: `admin.php` is the "new SchiC entry" form (EDIT-level), despite the filena
 
 - Output is always rendered through `htmlspecialchars()` and (for multi-line content) `nl2br(htmlspecialchars())`. Preserve this when adding rendering.
 - Database column names contain umlauts (`fächerverbindung`, `heterogenität`, `übergreifende_themen`, `änderungskommentar`). Quote them in raw SQL with `schics_quote_ident()` or hand-quote with `"…"` in SQLite. Named PDO parameters with umlaut keys work fine.
+- The 11 SchiC content fields are always rendered as a curriculum-sheet grid (mirrors the paper Vorlage). Read pages include `_curriculum_view.php`; edit pages include `_curriculum_form.php`. Cell metadata lives in `schics_curriculum_cells()` — adding/renaming a content field means: add the DB column, update the cells helper, update the INSERT in `admin.php` and `neue_version.php`. Don't render the sheet inline.
+- The filter grammar for searching SchiCs (`1-4`, `5,6`, `>=3`, `<=6`, `4`) is duplicated in `ajax_suche.php` (POST) and `druck.php` (GET). Keep them in sync if the grammar changes.
+- Print output uses `@media print` rules in `assets/style.css` (A4 landscape, one sheet per page). Pages that should print well include `<header class="print-header">` and `<footer class="print-footer">` — both are screen-hidden and print-only.
 - The `Fächer` list and the year range are per-school, stored in `settings`. Always go through `schics_faecher()` and `schics_jahrgang_range()` — never hardcode either, and never re-declare the `Fächer` list inline.
 - Content-column names that come from `$_GET`/`$_POST` (only `dashboard_data.php`) MUST be validated against `schics_content_fields()` before being interpolated into SQL.
 - `bearbeitet_von` is **optional**. Forms must not mark it `required`; views must guard with `if (!empty(...))` before rendering.

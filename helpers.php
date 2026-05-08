@@ -15,6 +15,24 @@ function schics_status_badge(string $status): string {
     return "<span class=\"status $cls\">$text</span>";
 }
 
+// Reihenfolge und Metadaten der Curriculum-Sheet-Zellen.
+// Tupel: [Grid-Position, A/B/C, Titel, DB-Spalte]
+function schics_curriculum_cells(): array {
+    return [
+        ['fachv',    'a', 'Fächerverbindende Schwerpunkte',                      'fächerverbindung'],
+        ['hetero',   'a', 'Heterogenität / Inklusion',                           'heterogenität'],
+        ['schulp',   'a', 'Schulprofil / Pädagogische Schwerpunktsetzung',       'schulprofil'],
+        ['sprach',   'b', 'Sprachbildung',                                       'sprachbildung'],
+        ['leben',    'a', 'Lebensweltbezug',                                     'lebensweltbezug'],
+        ['kompet',   'c', 'Kompetenzen und Konkretisierung',                     'kompetenzen'],
+        ['uebergr',  'b', 'Übergreifende Themen',                                'übergreifende_themen'],
+        ['kooper',   'a', 'Kooperationsangebote und außerschulische Lernorte',   'kooperationen'],
+        ['lernber',  'a', 'Lernberatung, Leistungsdokumentation und -bewertung', 'leistungsbewertung'],
+        ['medien',   'b', 'Medienbildung',                                       'medienbildung'],
+        ['methoden', 'b', 'Methoden und Arbeitstechniken',                       'methoden'],
+    ];
+}
+
 // Ein einzelnes Feld in der Detailansicht: Label oben, Wert unten.
 // Mehrzeiliger Inhalt wird über nl2br dargestellt.
 function schics_field(string $label, ?string $value, bool $multiline = false): string {

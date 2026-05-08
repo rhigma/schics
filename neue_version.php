@@ -75,7 +75,8 @@ function f(string $key, string $default = ''): string {
     return htmlspecialchars($vorlage[$key] ?? $default);
 }
 
-[$jgMin, $jgMax] = schics_jahrgang_range();
+// Bei Validierungs-Fehlern POST-Daten zurückspielen, sonst Vorlage.
+$values = !empty($_POST) ? $_POST : ($vorlage ?: []);
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -105,73 +106,30 @@ function f(string $key, string $default = ''): string {
 
         <form method="post">
             <section class="section">
-                <h2 class="section-title">Allgemeine Angaben</h2>
+                <h2 class="section-title">Verwaltung</h2>
                 <div class="row g-3">
-                    <div class="col-md-2"><label class="form-label">SchiC-ID *</label>
-                        <input type="number" name="schic_id" class="form-control" value="<?= f('schic_id') ?>" required></div>
-                    <div class="col-md-2"><label class="form-label">Version *</label>
-                        <input type="text" name="version" class="form-control" placeholder="z. B. 1.1" required></div>
+                    <div class="col-md-3"><label class="form-label">SchiC-ID *</label>
+                        <input type="number" name="schic_id" class="form-control" value="<?= htmlspecialchars((string)($values['schic_id'] ?? '')) ?>" required></div>
+                    <div class="col-md-3"><label class="form-label">Version *</label>
+                        <input type="text" name="version" class="form-control" value="<?= htmlspecialchars((string)($_POST['version'] ?? '')) ?>" placeholder="z. B. 1.1" required></div>
                     <div class="col-md-3"><label class="form-label">Status *</label>
                         <select name="status" class="form-select" required>
-                            <?php $status = f('status', 'Entwurf'); ?>
+                            <?php $status = $_POST['status'] ?? ($vorlage['status'] ?? 'Entwurf'); ?>
                             <option value="Entwurf"     <?= $status === 'Entwurf'     ? 'selected' : '' ?>>Entwurf</option>
                             <option value="Beschlossen" <?= $status === 'Beschlossen' ? 'selected' : '' ?>>Beschlossen</option>
                         </select></div>
-                    <div class="col-md-3"><label class="form-label">Stand *</label>
-                        <input type="date" name="stand" class="form-control" value="<?= date('Y-m-d') ?>" required></div>
-                    <div class="col-md-2"><label class="form-label">Jahrgang *</label>
-                        <input type="number" name="jahrgang" class="form-control"
-                               value="<?= f('jahrgang') ?>"
-                               min="<?= (int)$jgMin ?>" max="<?= (int)$jgMax ?>" required></div>
-                    <div class="col-md-4"><label class="form-label">Fach *</label>
-                        <select name="fach" class="form-select" required>
-                            <?php foreach (schics_faecher() as $fach): ?>
-                                <option value="<?= htmlspecialchars($fach) ?>" <?= f('fach') === $fach ? 'selected' : '' ?>><?= htmlspecialchars($fach) ?></option>
-                            <?php endforeach; ?>
-                        </select></div>
-                    <div class="col-md-8"><label class="form-label">Thema *</label>
-                        <input type="text" name="thema" class="form-control" value="<?= f('thema') ?>" required></div>
-                    <div class="col-md-2"><label class="form-label">Umfang</label>
-                        <input type="text" name="umfang" class="form-control" value="<?= f('umfang') ?>"></div>
-                    <div class="col-md-2"><label class="form-label">Reihenfolge</label>
-                        <input type="number" name="reihenfolge" class="form-control" value="<?= f('reihenfolge', '0') ?>"></div>
+                    <div class="col-md-3"><label class="form-label">Reihenfolge</label>
+                        <input type="number" name="reihenfolge" class="form-control" value="<?= htmlspecialchars((string)($values['reihenfolge'] ?? '0')) ?>"></div>
                 </div>
             </section>
 
-            <section class="section section--rlp-a">
-                <h2 class="section-title">Rahmenlehrplan A · Fachübergreifende Aspekte</h2>
-                <div class="row g-3">
-                    <div class="col-md-6"><label class="form-label">Fächerverbindung</label><textarea name="fächerverbindung" class="form-control"><?= f('fächerverbindung') ?></textarea></div>
-                    <div class="col-md-6"><label class="form-label">Heterogenität / Inklusion</label><textarea name="heterogenität" class="form-control"><?= f('heterogenität') ?></textarea></div>
-                    <div class="col-md-6"><label class="form-label">Schulprofil</label><textarea name="schulprofil" class="form-control"><?= f('schulprofil') ?></textarea></div>
-                    <div class="col-md-6"><label class="form-label">Lebensweltbezug</label><textarea name="lebensweltbezug" class="form-control"><?= f('lebensweltbezug') ?></textarea></div>
-                    <div class="col-md-6"><label class="form-label">Kooperationen</label><textarea name="kooperationen" class="form-control"><?= f('kooperationen') ?></textarea></div>
-                    <div class="col-md-6"><label class="form-label">Leistungsbewertung</label><textarea name="leistungsbewertung" class="form-control"><?= f('leistungsbewertung') ?></textarea></div>
-                </div>
-            </section>
-
-            <section class="section section--rlp-b">
-                <h2 class="section-title">Rahmenlehrplan B · Querschnittsaufgaben</h2>
-                <div class="row g-3">
-                    <div class="col-md-6"><label class="form-label">Sprachbildung</label><textarea name="sprachbildung" class="form-control"><?= f('sprachbildung') ?></textarea></div>
-                    <div class="col-md-6"><label class="form-label">Medienbildung</label><textarea name="medienbildung" class="form-control"><?= f('medienbildung') ?></textarea></div>
-                    <div class="col-md-6"><label class="form-label">Methoden</label><textarea name="methoden" class="form-control"><?= f('methoden') ?></textarea></div>
-                    <div class="col-md-6"><label class="form-label">Übergreifende Themen</label><textarea name="übergreifende_themen" class="form-control"><?= f('übergreifende_themen') ?></textarea></div>
-                </div>
-            </section>
-
-            <section class="section section--rlp-c">
-                <h2 class="section-title">Rahmenlehrplan C · Kompetenzen</h2>
-                <div class="row g-3">
-                    <div class="col-md-12"><label class="form-label">Kompetenzen</label><textarea name="kompetenzen" class="form-control"><?= f('kompetenzen') ?></textarea></div>
-                </div>
-            </section>
+            <?php include __DIR__ . '/_curriculum_form.php'; ?>
 
             <section class="section">
                 <h2 class="section-title">Bearbeitung</h2>
                 <div class="row g-3">
-                    <div class="col-md-6"><label class="form-label">Bearbeitet von <span class="text-muted">(optional)</span></label><input type="text" name="bearbeitet_von" class="form-control"></div>
-                    <div class="col-md-6"><label class="form-label">Änderungskommentar</label><textarea name="änderungskommentar" class="form-control"></textarea></div>
+                    <div class="col-md-6"><label class="form-label">Bearbeitet von <span class="text-muted">(optional)</span></label><input type="text" name="bearbeitet_von" class="form-control" value="<?= htmlspecialchars((string)($_POST['bearbeitet_von'] ?? '')) ?>"></div>
+                    <div class="col-md-6"><label class="form-label">Änderungskommentar</label><textarea name="änderungskommentar" class="form-control"><?= htmlspecialchars((string)($_POST['änderungskommentar'] ?? '')) ?></textarea></div>
                 </div>
             </section>
 
@@ -181,5 +139,6 @@ function f(string $key, string $default = ''): string {
             </div>
         </form>
     </main>
+    <script src="assets/curriculum.js"></script>
 </body>
 </html>

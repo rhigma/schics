@@ -443,6 +443,297 @@ textarea.form-control { min-height: 84px; }
     font-size: .82rem;
 }
 
+/* --- Curriculum-Sheet (Darstellung wie Papier-Vorlage) ----------- */
+
+.curriculum-sheet {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-bottom: 1rem;
+}
+
+.curriculum-sheet__head {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    display: flex;
+    flex-wrap: wrap;
+    background: var(--color-surface);
+    border: 2px solid var(--rlp-a);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+.curriculum-sheet__head > div {
+    padding: .55rem .85rem;
+    flex: 1 1 0;
+    border-right: 1px solid var(--rlp-a);
+    font-size: .9rem;
+    min-width: 140px;
+}
+.curriculum-sheet__head > div:last-child { border-right: 0; }
+.curriculum-sheet__head label {
+    color: var(--rlp-a);
+    font-weight: 700;
+    margin-right: .4rem;
+}
+.curriculum-sheet__head-thema { flex: 2 1 0; min-width: 220px; }
+
+.curriculum-cell {
+    padding: .8rem .95rem 1.4rem;
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    border: 2px solid var(--color-border-strong);
+    position: relative;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+}
+.curriculum-cell__title {
+    font-size: .82rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin: 0 0 .35rem;
+    line-height: 1.25;
+}
+.curriculum-cell__body {
+    margin: 0;
+    flex: 1;
+    color: var(--color-text);
+    font-size: .88rem;
+    line-height: 1.45;
+    word-break: break-word;
+    white-space: pre-wrap;
+}
+.curriculum-cell__body:empty::before { content: "–"; color: #cbd5e1; }
+.curriculum-cell__tag {
+    position: absolute;
+    bottom: .15rem;
+    right: .55rem;
+    font-size: 1.6rem;
+    font-weight: 800;
+    line-height: 1;
+    opacity: .35;
+    user-select: none;
+    pointer-events: none;
+}
+
+.curriculum-cell--a { border-color: var(--rlp-a); background: var(--rlp-a-soft); }
+.curriculum-cell--a .curriculum-cell__tag { color: var(--rlp-a); }
+.curriculum-cell--b { border-color: var(--rlp-b); background: var(--rlp-b-soft); }
+.curriculum-cell--b .curriculum-cell__tag { color: var(--rlp-b); }
+.curriculum-cell--c { border-color: var(--rlp-c); background: var(--rlp-c-soft); }
+.curriculum-cell--c .curriculum-cell__tag { color: var(--rlp-c); }
+
+.cell-fachv    { grid-area: 2 / 1 / 3 / 2; }
+.cell-hetero   { grid-area: 2 / 2 / 3 / 3; }
+.cell-schulp   { grid-area: 2 / 3 / 3 / 4; }
+.cell-sprach   { grid-area: 2 / 4 / 3 / 5; }
+.cell-leben    { grid-area: 3 / 1 / 4 / 2; }
+.cell-kompet   { grid-area: 3 / 2 / 5 / 4; }
+.cell-uebergr  { grid-area: 3 / 4 / 6 / 5; }
+.cell-kooper   { grid-area: 4 / 1 / 5 / 2; }
+.cell-lernber  { grid-area: 5 / 1 / 6 / 2; }
+.cell-medien   { grid-area: 5 / 2 / 6 / 3; }
+.cell-methoden { grid-area: 5 / 3 / 6 / 4; }
+
+@media (max-width: 900px) {
+    .curriculum-sheet { grid-template-columns: 1fr; }
+    .curriculum-sheet__head { flex-direction: column; }
+    .curriculum-sheet__head > div {
+        border-right: 0;
+        border-bottom: 1px solid var(--rlp-a);
+        min-width: 0;
+    }
+    .curriculum-sheet__head > div:last-child { border-bottom: 0; }
+    .curriculum-cell,
+    .cell-fachv, .cell-hetero, .cell-schulp, .cell-sprach,
+    .cell-leben, .cell-kompet, .cell-uebergr,
+    .cell-kooper, .cell-lernber, .cell-medien, .cell-methoden {
+        grid-area: auto !important;
+        min-height: 90px;
+    }
+}
+
+.curriculum-pdfs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    margin: 0 0 1.25rem;
+}
+.curriculum-pdfs .pdf-link { margin-top: 0; }
+
+/* --- Curriculum-Sheet im Edit-Modus ------------------------------ */
+
+.curriculum-sheet--edit .curriculum-sheet__head > div {
+    display: flex;
+    align-items: baseline;
+    gap: .35rem;
+}
+.curriculum-sheet--edit .curriculum-sheet__head label {
+    margin: 0;
+    white-space: nowrap;
+}
+.curriculum-sheet--edit .curriculum-sheet__head input,
+.curriculum-sheet--edit .curriculum-sheet__head select {
+    border: 0;
+    background: transparent;
+    padding: .15rem .25rem;
+    font: inherit;
+    color: var(--color-text);
+    flex: 1;
+    min-width: 0;
+    border-radius: 3px;
+}
+.curriculum-sheet--edit .curriculum-sheet__head input:focus,
+.curriculum-sheet--edit .curriculum-sheet__head select:focus {
+    outline: 2px solid var(--rlp-a);
+    outline-offset: 1px;
+    background: #fff;
+}
+
+.curriculum-cell--edit { padding-bottom: 1.5rem; }
+.curriculum-cell--edit.cell-kompet  { min-height: 240px; }
+.curriculum-cell--edit.cell-uebergr { min-height: 360px; }
+
+.curriculum-cell__title label {
+    font-weight: 600;
+    cursor: pointer;
+    margin: 0;
+}
+
+.curriculum-cell__field {
+    flex: 1;
+    width: 100%;
+    border: 0;
+    background: rgba(255, 255, 255, .55);
+    border-radius: 4px;
+    padding: .35rem .55rem;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.4;
+    color: var(--color-text);
+    resize: none;
+    overflow: hidden;
+    transition: background-color .12s, box-shadow .12s;
+}
+.curriculum-cell__field:focus {
+    outline: none;
+    background: #fff;
+    box-shadow: 0 0 0 2px currentColor;
+}
+.curriculum-cell--a .curriculum-cell__field:focus { box-shadow: 0 0 0 2px var(--rlp-a); }
+.curriculum-cell--b .curriculum-cell__field:focus { box-shadow: 0 0 0 2px var(--rlp-b); }
+.curriculum-cell--c .curriculum-cell__field:focus { box-shadow: 0 0 0 2px var(--rlp-c); }
+.curriculum-cell__field.is-overfull {
+    background: rgba(254, 226, 226, .65);
+}
+.curriculum-cell__field.is-overfull:focus {
+    background: rgba(254, 226, 226, .9);
+}
+
+/* --- Druck-Layout (Seite druck.php) ------------------------------ */
+
+.druck-toolbar {
+    position: sticky;
+    top: 0;
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    padding: .65rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    z-index: 10;
+    box-shadow: var(--shadow-sm);
+}
+.druck-main {
+    max-width: 1200px;
+    margin: 1rem auto 0;
+    padding: 0 1.5rem 3rem;
+}
+.druck-page + .druck-page { margin-top: 2rem; }
+
+.print-header,
+.print-footer { display: none; }
+
+/* --- @media print: A4 quer, ein SchiC pro Seite ------------------ */
+
+@media print {
+    @page { size: A4 landscape; margin: 1cm; }
+
+    html, body { background: #fff; }
+    .topbar, .druck-toolbar, .page-header, .pdf-link,
+    .curriculum-pdfs, .alert, .actions, .meta-row,
+    .section { display: none !important; }
+
+    main, .container-app, .druck-main {
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+    }
+
+    .print-header {
+        display: block;
+        font-size: 10pt;
+        text-align: center;
+        color: #555;
+        margin: 0 0 .35cm;
+    }
+    .print-footer {
+        display: block;
+        font-size: 9pt;
+        text-align: right;
+        color: #555;
+        margin: .25cm 0 0;
+    }
+
+    .druck-page {
+        page-break-after: always;
+        break-after: page;
+        margin: 0 !important;
+    }
+    .druck-page:last-child {
+        page-break-after: auto;
+        break-after: auto;
+    }
+
+    .curriculum-sheet {
+        gap: 3pt;
+        margin: 0;
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+    .curriculum-cell {
+        min-height: 0;
+        padding: 6pt 8pt 14pt;
+        box-shadow: none;
+    }
+    .curriculum-cell__title {
+        font-size: 9pt;
+        margin-bottom: 3pt;
+    }
+    .curriculum-cell__body {
+        font-size: 9pt;
+        line-height: 1.3;
+    }
+    .curriculum-cell__tag {
+        font-size: 14pt;
+        bottom: 1pt;
+        right: 4pt;
+    }
+    .curriculum-sheet__head > div {
+        padding: 4pt 8pt;
+        font-size: 9pt;
+        min-width: 0;
+    }
+    .curriculum-sheet__head { border-width: 1.5pt; }
+    .curriculum-cell { border-width: 1.5pt; }
+
+    /* Kompetenzen + Übergreifende dürfen nicht gestaucht werden,
+       aber auch nicht über die Seite hinausragen */
+    .cell-kompet { min-height: 5cm; }
+    .cell-uebergr { min-height: 7.5cm; }
+}
+
 /* --- PDF-Link (Rahmenlehrpläne) ----------------------------------- */
 
 .pdf-link {

@@ -45,6 +45,9 @@ $fächer = schics_faecher();
                            value="<?= htmlspecialchars($_GET['suchbegriff'] ?? '') ?>"
                            placeholder="z. B. Demokratie">
                 </div>
+                <div class="col-12 d-flex justify-content-end">
+                    <button type="button" id="printSelection" class="btn btn-outline-primary">🖨️ Auswahl drucken / als PDF</button>
+                </div>
             </form>
         </section>
 
@@ -52,20 +55,23 @@ $fächer = schics_faecher();
     </main>
 
     <script>
+    function formParams() {
+        return new URLSearchParams(new FormData(document.getElementById('sucheForm')));
+    }
     function sucheStarten() {
-        const form = document.getElementById('sucheForm');
-        const formData = new FormData(form);
-        fetch('ajax_suche.php', { method: 'POST', body: formData })
+        fetch('ajax_suche.php', { method: 'POST', body: new FormData(document.getElementById('sucheForm')) })
             .then(res => res.text())
             .then(html => { document.getElementById('ergebnisse').innerHTML = html; });
     }
     document.querySelectorAll('#sucheForm input, #sucheForm select').forEach(el => {
         el.addEventListener('input', () => { sucheStarten(); updateURL(); });
     });
+    document.getElementById('printSelection').addEventListener('click', () => {
+        window.open('druck.php?' + formParams().toString(), '_blank');
+    });
     sucheStarten();
     function updateURL() {
-        const params = new URLSearchParams(new FormData(document.getElementById('sucheForm')));
-        history.replaceState(null, '', '?' + params.toString());
+        history.replaceState(null, '', '?' + formParams().toString());
     }
     </script>
 </body>
