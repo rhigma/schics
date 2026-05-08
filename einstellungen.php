@@ -55,6 +55,7 @@ $adminPwd   = (string)schics_setting('admin_password', '');
 [$jahrgangMin, $jahrgangMax] = schics_jahrgang_range();
 $faecherList = schics_faecher();
 $faecherText = implode("\n", $faecherList);
+$flashMsg    = schics_consume_flash();
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -75,6 +76,9 @@ $faecherText = implode("\n", $faecherList);
             </div>
         </div>
 
+        <?php if ($flashMsg): ?>
+            <div class="alert alert-info"><?= htmlspecialchars($flashMsg) ?></div>
+        <?php endif; ?>
         <?php if ($message): ?>
             <div class="alert <?= $msgClass ?>"><?= htmlspecialchars($message) ?></div>
         <?php endif; ?>
@@ -144,6 +148,23 @@ $faecherText = implode("\n", $faecherList);
                 <a href="index.php" class="btn btn-secondary">Zurück</a>
             </div>
         </form>
+
+        <section class="section">
+            <h2 class="section-title">Software-Update</h2>
+            <p>
+                Holt den aktuellen Stand der Anwendung von GitHub
+                (<code>rhigma/schics</code>, Branch <code>main</code>) und
+                überschreibt die Programmdateien. Die Datenbank und der
+                <code>data/</code>-Ordner bleiben unverändert; vor jedem Update
+                wird eine zeitgestempelte DB-Sicherung in <code>data/backups/</code>
+                abgelegt (es werden die letzten 10 Sicherungen behalten).
+            </p>
+            <form method="post" action="update.php"
+                  onsubmit="return confirm('Programmdateien jetzt von GitHub aktualisieren? Die Datenbank wird vorher gesichert.');">
+                <input type="hidden" name="confirm" value="yes">
+                <button class="btn btn-primary">Jetzt von GitHub aktualisieren</button>
+            </form>
+        </section>
     </main>
 </body>
 </html>

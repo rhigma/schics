@@ -41,6 +41,7 @@ Every row in `curricula` is a **versioned snapshot** of one curriculum entry. `s
 - `setup.php` — first-run wizard. Self-redirects to `einstellungen.php` once setup is done.
 - `einstellungen.php` — admin page for school name, passwords, year range, and `Fächer` list.
 - `druck.php` — printable multi-SchiC view. Same filter grammar as `ajax_suche.php` (`1-4`, `5,6`, `>=3`, `<=6`, `4`) but reads from `$_GET` so the URL is bookmarkable. One sheet per A4-landscape page via `@media print` rules in `style.css`.
+- `update.php` — ADMIN-only self-update. Pulls a ZIP snapshot of `rhigma/schics@main` from `codeload.github.com` via cURL, extracts to `data/_update_tmp/`, and recursively copies over the project root **except** the `data/` directory (which holds the SQLite DB, sessions, and backups). Before overwriting, the current `curricula.db` is copied to `data/backups/curricula_<timestamp>.db`; only the 10 most recent backups are kept. POST-only with `confirm=yes`. The `<form action="update.php">` lives at the bottom of `einstellungen.php`. Requires `curl` and `zip` PHP extensions (both on Strato by default).
 
 ### Page → required level
 
@@ -48,7 +49,7 @@ Every row in `curricula` is a **versioned snapshot** of one curriculum entry. `s
 |---|---|
 | `index.php`, `ajax_suche.php`, `detail.php`, `alle_versionen.php`, `dashboard.php`, `dashboard_data.php`, `druck.php` | READ |
 | `admin.php` (new SchiC entry), `neue_version.php`, `sortieren.php`, `update_reihenfolge.php` | EDIT |
-| `einstellungen.php`, `update_status.php` | ADMIN |
+| `einstellungen.php`, `update_status.php`, `update.php` | ADMIN |
 
 Note: `admin.php` is the "new SchiC entry" form (EDIT-level), despite the filename. The genuine admin surface is `einstellungen.php`.
 

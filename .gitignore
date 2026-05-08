@@ -6,6 +6,9 @@ data/curricula.db
 data/curricula.db-shm
 data/curricula.db-wal
 data/sessions/
+data/backups/
+data/_update.zip
+data/_update_tmp/
 
 # Lokale PHP-Konfiguration (enthält absolute Windows-Pfade)
 php.ini
