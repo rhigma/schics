@@ -881,3 +881,209 @@ textarea.form-control { min-height: 84px; }
     cursor: default;
     pointer-events: none;
 }
+
+/* --- Startseiten-Raster (Fach × Jahrgang) ------------------------- */
+
+.overview-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 2rem;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    color: var(--color-muted);
+    font-size: .9rem;
+}
+.overview-legend {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    flex-wrap: wrap;
+}
+.overview-legend-swatch {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    border: 1px solid var(--color-border);
+    margin-left: .4rem;
+    vertical-align: -2px;
+}
+.overview-legend-swatch--empty { background: var(--color-bg); }
+.overview-legend-swatch--one   { background: #d6e6f5; border-color: #b8d3eb; }
+.overview-legend-swatch--few   { background: #88b4dc; border-color: #6a9dcb; }
+.overview-legend-swatch--many  { background: var(--color-primary); border-color: var(--color-primary-hover); }
+
+.overview-scroll { overflow-x: auto; }
+
+.overview-grid {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 4px;
+    table-layout: fixed;
+}
+.overview-grid th,
+.overview-grid td {
+    padding: 0;
+    text-align: center;
+    vertical-align: middle;
+    font-weight: 500;
+}
+.overview-grid thead th {
+    font-size: .8rem;
+    color: var(--color-muted);
+    font-weight: 600;
+    padding-bottom: .35rem;
+}
+.overview-corner {
+    text-align: left !important;
+    padding-left: .5rem !important;
+    color: var(--color-muted);
+    font-weight: 500;
+    width: 11rem;
+}
+.overview-jg { width: auto; }
+.overview-fach {
+    text-align: left !important;
+    padding: 0 .65rem !important;
+    font-size: .92rem;
+    color: var(--color-text);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    height: 2.6rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.overview-cell {
+    height: 2.6rem;
+    position: relative;
+}
+.overview-cell-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    color: var(--color-text);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: .95rem;
+    transition: transform .08s ease, box-shadow .12s, border-color .12s;
+}
+.overview-cell-link:hover {
+    text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+    border-color: var(--color-border-strong);
+}
+.overview-cell-link--static {
+    cursor: default;
+    pointer-events: none;
+}
+.overview-cell-count { line-height: 1; }
+
+.overview-cell--empty .overview-cell-link {
+    background: var(--color-bg);
+    color: #c5cad2;
+}
+.overview-cell--empty .overview-cell-link:hover {
+    background: var(--color-surface);
+    color: var(--color-muted);
+}
+.overview-cell--one .overview-cell-link {
+    background: #d6e6f5;
+    border-color: #b8d3eb;
+    color: #1f3a5b;
+}
+.overview-cell--few .overview-cell-link {
+    background: #88b4dc;
+    border-color: #6a9dcb;
+    color: #102a44;
+}
+.overview-cell--many .overview-cell-link {
+    background: var(--color-primary);
+    border-color: var(--color-primary-hover);
+    color: #fff;
+}
+
+/* Tooltip — beim Hover/Fokus ein Kärtchen mit den SchiC-Themen einblenden. */
+.overview-tooltip {
+    position: absolute;
+    z-index: 30;
+    left: 50%;
+    bottom: calc(100% + 8px);
+    transform: translateX(-50%) translateY(4px);
+    min-width: 16rem;
+    max-width: 24rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, .12);
+    padding: .65rem .8rem;
+    text-align: left;
+    color: var(--color-text);
+    font-weight: 400;
+    font-size: .85rem;
+    line-height: 1.4;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .12s, transform .12s;
+}
+.overview-cell-link:hover .overview-tooltip,
+.overview-cell-link:focus .overview-tooltip,
+.overview-cell-link:focus-visible .overview-tooltip {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+.overview-tooltip-head {
+    font-size: .72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--color-muted);
+    margin-bottom: .35rem;
+}
+.overview-tooltip ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.overview-tooltip li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem;
+    padding: .25rem 0;
+    border-top: 1px solid var(--color-border);
+}
+.overview-tooltip li:first-child { border-top: 0; }
+.overview-tooltip-thema {
+    flex: 1;
+    min-width: 0;
+    word-break: break-word;
+}
+.overview-tooltip-empty {
+    margin: 0;
+    color: var(--color-muted);
+    font-style: italic;
+}
+
+/* Erste/letzte Spalten: Tooltip nicht aus dem Bildschirm rutschen lassen. */
+.overview-grid tbody tr td:nth-child(2) .overview-tooltip { left: 0; transform: translateX(0) translateY(4px); }
+.overview-grid tbody tr td:nth-child(2) .overview-cell-link:hover .overview-tooltip,
+.overview-grid tbody tr td:nth-child(2) .overview-cell-link:focus .overview-tooltip,
+.overview-grid tbody tr td:nth-child(2) .overview-cell-link:focus-visible .overview-tooltip {
+    transform: translateX(0) translateY(0);
+}
+.overview-grid tbody tr td:last-child .overview-tooltip { left: auto; right: 0; transform: translateX(0) translateY(4px); }
+.overview-grid tbody tr td:last-child .overview-cell-link:hover .overview-tooltip,
+.overview-grid tbody tr td:last-child .overview-cell-link:focus .overview-tooltip,
+.overview-grid tbody tr td:last-child .overview-cell-link:focus-visible .overview-tooltip {
+    transform: translateX(0) translateY(0);
+}

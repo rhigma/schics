@@ -15,6 +15,7 @@ $active = fn(string $page) => $currentPage === $page ? ' class="active"' : '';
         </a>
         <ul class="topnav">
             <li><a href="index.php"<?= $active('index.php') ?>>Startseite</a></li>
+            <li><a href="suchen.php"<?= $active('suchen.php') ?>>Suchen</a></li>
             <li><a href="dashboard.php"<?= $active('dashboard.php') ?>>Quer-/Längsschnitte</a></li>
             <?php if ($canEdit): ?>
                 <li><a href="admin.php"<?= $active('admin.php') ?>>Neuer Eintrag</a></li>
