@@ -56,7 +56,7 @@ foreach ($alle as $e) {
                 <tbody>
                     <?php foreach ($fächer as $fach): ?>
                         <tr>
-                            <th class="overview-fach"><?= htmlspecialchars($fach) ?></th>
+                            <th class="overview-fach"><a href="suchen.php?fach=<?= urlencode($fach) ?>"><?= htmlspecialchars($fach) ?></a></th>
                             <?php foreach ($jahrgaenge as $jg):
                                 $eintraege = $zellen[$fach][(int)$jg] ?? [];
                             ?>
