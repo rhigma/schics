@@ -32,10 +32,13 @@ if ($singleSchicId > 0) {
         exit;
     }
     $einträge = [$row];
+    // reihenfolge zweistellig mit führender Null, damit der Datei-Explorer
+    // die SchiCs eines Faches/Jahrgangs in der richtigen Reihenfolge anzeigt.
     $filename = sprintf(
-        'SchiC_%s_Jg%s_%s.pdf',
+        'SchiC_%s_Jg%s_%02d_%s.pdf',
         $row['fach'] ?: 'Fach',
         $row['jahrgang'] ?: '',
+        (int)($row['reihenfolge'] ?? 0),
         $row['thema']    ?: 'ohne-Titel'
     );
 } else {
@@ -127,55 +130,56 @@ $mpdf->SetTitle($filename);
 $mpdf->SetCreator('SchiCs');
 
 // Stylesheet einmal global laden ---------------------------------------------
+// Spaltenbreiten: 4 gleiche Spalten à 25 %. Der Header darüber spannt sich
+// über dieselben 4 Spaltengrenzen — Fach=Spalte 1, Jahrgang=Spalte 2,
+// Thema=Spalten 3+4 weniger Umfang/Stand am Rand. Das "Thema"-Feld nimmt
+// den dicken Mittelblock ein.
 $css = <<<CSS
 body { font-family: dejavusans, sans-serif; font-size: 9pt; color: #1f2937; }
 .page-header {
     font-size: 10pt; color: #555; text-align: center;
-    margin: 0 0 0.2cm; border-bottom: 0.5pt solid #ccc; padding-bottom: 2pt;
+    margin: 0 0 0.25cm; padding-bottom: 3pt; border-bottom: 0.5pt solid #ccc;
 }
 .page-footer {
     font-size: 8.5pt; color: #555; text-align: right;
-    margin: 0.2cm 0 0; border-top: 0.5pt solid #ccc; padding-top: 2pt;
+    margin: 0.25cm 0 0; padding-top: 3pt; border-top: 0.5pt solid #ccc;
 }
 table.head, table.grid {
-    width: 100%; border-collapse: collapse; table-layout: fixed;
+    width: 100%; table-layout: fixed;
+    border-collapse: separate; border-spacing: 3pt;
 }
-table.head { margin-bottom: 4pt; }
+table.head { margin: 0 0 0; border-spacing: 3pt 0; }
+table.head td { padding: 0; }
 .head-cell {
-    border: 1pt solid #6b7280; padding: 4pt 6pt; font-size: 9pt;
-    background: #f6f7f9; vertical-align: middle;
+    border: 1pt solid #94a3b8; padding: 5pt 7pt; font-size: 9pt;
+    background: #f6f7f9; vertical-align: middle; line-height: 1.25;
 }
 .head-label {
     font-weight: bold; color: #4b5563; text-transform: uppercase;
-    font-size: 7.5pt; letter-spacing: 0.05em; margin-right: 4pt;
+    font-size: 7.5pt; letter-spacing: 0.05em; margin-right: 3pt;
 }
+table.grid { margin-top: 4pt; }
 table.grid td.g {
-    border: 0.5pt solid transparent; padding: 0; vertical-align: top;
-    height: 4cm;
-}
-.cell {
     border: 1.2pt solid #d1d5db;
-    padding: 5pt 8pt;
-    height: 100%; overflow: hidden;
+    padding: 6pt 9pt 8pt; vertical-align: top;
+    height: 4cm; line-height: 1.3;
 }
+table.grid td.g-tall2 { height: 8cm; } /* rowspan=2 — sprach, uebergr, kompet */
 .cell-title {
     font-size: 8.5pt; font-weight: bold; color: #1f2937;
-    margin-bottom: 3pt; line-height: 1.2;
+    margin: 0 0 4pt; line-height: 1.25;
 }
-.cell-body { font-size: 8.5pt; line-height: 1.3; color: #374151; }
 .cell-tag {
-    font-size: 8.5pt; font-weight: bold;
-    margin-right: 2pt;
+    font-weight: bold; font-size: 9pt;
+    margin-right: 3pt;
 }
-.cell--a            { border-color: #2563eb; background: #eff6ff; }
-.cell--a .cell-tag  { color: #2563eb; }
-.cell--b            { border-color: #16a34a; background: #f0fdf4; }
-.cell--b .cell-tag  { color: #16a34a; }
-.cell--c            { border-color: #d97706; background: #fffbeb; }
-.cell--c .cell-tag  { color: #d97706; }
-.g-kompet  { height: 8cm; }
-.g-sprach  { height: 8cm; }
-.g-uebergr { height: 8cm; }
+.cell-body { font-size: 8.5pt; line-height: 1.35; color: #374151; }
+.g--a           { border-color: #2563eb !important; background: #eff6ff; }
+.g--a .cell-tag { color: #2563eb; }
+.g--b           { border-color: #16a34a !important; background: #f0fdf4; }
+.g--b .cell-tag { color: #16a34a; }
+.g--c           { border-color: #d97706 !important; background: #fffbeb; }
+.g--c .cell-tag { color: #d97706; }
 CSS;
 $mpdf->WriteHTML($css, \Mpdf\HTMLParserMode::HEADER_CSS);
 
