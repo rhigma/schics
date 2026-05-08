@@ -134,46 +134,51 @@ $mpdf->SetCreator('SchiCs');
 // über dieselben 4 Spaltengrenzen — Fach=Spalte 1, Jahrgang=Spalte 2,
 // Thema=Spalten 3+4 weniger Umfang/Stand am Rand. Das "Thema"-Feld nimmt
 // den dicken Mittelblock ein.
+// Höhen, Schriftgrößen und Padding sind so abgestimmt, dass Header-Zeile,
+// Body-Grid und Footer auch bei dichtem Inhalt (volle Kompetenzliste mit
+// vielen Stichpunkten) auf eine A4-Querseite passen. Bei wenig Inhalt
+// füllen die Mindesthöhen die Zellen aus, sodass die Seite nicht halbleer
+// wirkt.
 $css = <<<CSS
-body { font-family: dejavusans, sans-serif; font-size: 9pt; color: #1f2937; }
+body { font-family: dejavusans, sans-serif; font-size: 8.5pt; color: #1f2937; }
 .page-header {
     font-size: 10pt; color: #555; text-align: center;
-    margin: 0 0 0.25cm; padding-bottom: 3pt; border-bottom: 0.5pt solid #ccc;
+    margin: 0 0 0.2cm; padding-bottom: 3pt; border-bottom: 0.5pt solid #ccc;
 }
 .page-footer {
-    font-size: 8.5pt; color: #555; text-align: right;
-    margin: 0.25cm 0 0; padding-top: 3pt; border-top: 0.5pt solid #ccc;
+    font-size: 8pt; color: #555; text-align: right;
+    margin: 0.15cm 0 0; padding-top: 2pt; border-top: 0.5pt solid #ccc;
 }
 table.head, table.grid {
     width: 100%; table-layout: fixed;
     border-collapse: separate; border-spacing: 3pt;
 }
-table.head { margin: 0 0 0; border-spacing: 3pt 0; }
+table.head { margin: 0; border-spacing: 3pt 0; }
 table.head td { padding: 0; }
 .head-cell {
-    border: 1pt solid #94a3b8; padding: 5pt 7pt; font-size: 9pt;
-    background: #f6f7f9; vertical-align: middle; line-height: 1.25;
+    border: 1pt solid #94a3b8; padding: 4pt 6pt; font-size: 8.5pt;
+    background: #f6f7f9; vertical-align: middle; line-height: 1.2;
 }
 .head-label {
     font-weight: bold; color: #4b5563; text-transform: uppercase;
-    font-size: 7.5pt; letter-spacing: 0.05em; margin-right: 3pt;
+    font-size: 7pt; letter-spacing: 0.05em; margin-right: 3pt;
 }
-table.grid { margin-top: 4pt; }
+table.grid { margin-top: 3pt; page-break-inside: avoid; }
 table.grid td.g {
     border: 1.2pt solid #d1d5db;
-    padding: 6pt 9pt 8pt; vertical-align: top;
-    height: 4cm; line-height: 1.3;
+    padding: 4pt 7pt 5pt; vertical-align: top;
+    height: 3.4cm; line-height: 1.25;
 }
-table.grid td.g-tall2 { height: 8cm; } /* rowspan=2 — sprach, uebergr, kompet */
+table.grid td.g-tall2 { height: 6.8cm; } /* rowspan=2 — sprach, uebergr, kompet */
 .cell-title {
-    font-size: 8.5pt; font-weight: bold; color: #1f2937;
-    margin: 0 0 4pt; line-height: 1.25;
+    font-size: 8pt; font-weight: bold; color: #1f2937;
+    margin: 0 0 3pt; line-height: 1.2;
 }
 .cell-tag {
-    font-weight: bold; font-size: 9pt;
+    font-weight: bold; font-size: 8pt;
     margin-right: 3pt;
 }
-.cell-body { font-size: 8.5pt; line-height: 1.35; color: #374151; }
+.cell-body { font-size: 8pt; line-height: 1.3; color: #374151; }
 .g--a           { border-color: #2563eb !important; background: #eff6ff; }
 .g--a .cell-tag { color: #2563eb; }
 .g--b           { border-color: #16a34a !important; background: #f0fdf4; }
