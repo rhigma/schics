@@ -71,12 +71,21 @@ $themenListe = schics_uebergreifende_themen();
                                         <span class="overview-empty" aria-hidden="true"></span>
                                     <?php else: ?>
                                         <div class="overview-chips">
-                                            <?php foreach ($eintraege as $e): ?>
+                                            <?php foreach ($eintraege as $e):
+                                                $ut = trim((string)($e['uebergreifende_themen'] ?? ''));
+                                            ?>
                                                 <a class="overview-chip"
                                                    href="detail.php?schic_id=<?= (int)$e['schic_id'] ?>"
-                                                   data-tooltip="<?= htmlspecialchars($e['thema']) ?>"
                                                    data-themen="<?= htmlspecialchars(implode(' ', $e['themen'])) ?>"
-                                                   aria-label="<?= htmlspecialchars($e['thema']) ?>"></a>
+                                                   aria-label="<?= htmlspecialchars($e['thema']) ?>">
+                                                    <span class="chip-tooltip" role="tooltip">
+                                                        <span class="chip-tooltip__thema"><?= htmlspecialchars($e['thema']) ?></span>
+                                                        <?php if ($ut !== ''): ?>
+                                                            <span class="chip-tooltip__label">Übergreifende Themen</span>
+                                                            <span class="chip-tooltip__inhalt"><?= nl2br(htmlspecialchars($ut)) ?></span>
+                                                        <?php endif; ?>
+                                                    </span>
+                                                </a>
                                             <?php endforeach; ?>
                                         </div>
                                     <?php endif; ?>
