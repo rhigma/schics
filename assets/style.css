@@ -1040,56 +1040,109 @@ textarea.form-control { min-height: 84px; }
 
 /* Filter-Leiste: Pills für die übergreifenden Themen aus RLP Teil B. */
 .theme-filter {
-    margin-top: 1rem;
-    padding-top: 1rem;
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
     border-top: 1px solid var(--color-border);
+}
+.theme-filter-label {
+    font-size: .82rem;
+    color: var(--color-muted);
+    margin: 0 0 .75rem 0;
+    line-height: 1.5;
+}
+.theme-pills {
     display: flex;
     flex-wrap: wrap;
     gap: .4rem;
-    align-items: center;
 }
-.theme-filter-label {
-    font-size: .85rem;
-    color: var(--color-muted);
-    margin-right: .35rem;
-}
-.theme-toggle {
+.theme-pill {
     appearance: none;
+    -webkit-appearance: none;
     display: inline-flex;
     align-items: center;
-    padding: .25rem .7rem;
+    gap: .45rem;
+    padding: .35rem .8rem .35rem .65rem;
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: 999px;
     color: var(--color-text);
-    font-size: .82rem;
+    font-family: inherit;
+    font-size: .85rem;
     font-weight: 500;
-    line-height: 1.4;
+    line-height: 1.3;
     cursor: pointer;
-    transition: background-color .12s, border-color .12s, color .12s, box-shadow .12s;
+    user-select: none;
+    transition: background-color .12s, border-color .12s, color .12s, box-shadow .12s, transform .08s;
 }
-.theme-toggle:hover {
+.theme-pill:hover {
     border-color: var(--color-border-strong);
     background: var(--color-bg);
+    transform: translateY(-1px);
 }
-.theme-toggle:focus-visible {
+.theme-pill:focus-visible {
     outline: none;
     box-shadow: 0 0 0 3px rgba(44, 82, 130, .25);
 }
-.theme-toggle.is-active {
+.theme-pill-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--color-border-strong);
+    flex-shrink: 0;
+    transition: background-color .12s, box-shadow .12s;
+}
+.theme-pill-label {
+    white-space: nowrap;
+}
+.theme-pill-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.4rem;
+    height: 1.2rem;
+    padding: 0 .35rem;
+    background: var(--color-bg);
+    border-radius: 999px;
+    color: var(--color-muted);
+    font-size: .72rem;
+    font-weight: 600;
+    transition: background-color .12s, color .12s;
+}
+.theme-pill--zero {
+    opacity: .55;
+}
+.theme-pill--zero .theme-pill-count {
+    color: #b0b6c0;
+}
+
+/* Aktiver Zustand: Pille füllt sich mit Primary, Punkt leuchtet. */
+.theme-pill.is-active {
     background: var(--color-primary);
     border-color: var(--color-primary-hover);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(44, 82, 130, .25);
+    transform: translateY(-1px);
+}
+.theme-pill.is-active .theme-pill-dot {
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, .25);
+}
+.theme-pill.is-active .theme-pill-count {
+    background: rgba(255, 255, 255, .2);
     color: #fff;
 }
 
 /* Wenn ein Thema aktiv ist: nicht-passende Chips abdunkeln, Treffer betonen. */
 .overview-grid.is-filtering .overview-chip {
-    transition: opacity .15s, box-shadow .15s, transform .08s;
+    transition: opacity .15s, box-shadow .15s, transform .08s, background-color .15s;
 }
 .overview-grid.is-filtering .overview-chip.is-dim {
-    opacity: .18;
+    opacity: .12;
 }
 .overview-grid.is-filtering .overview-chip.is-match {
-    box-shadow: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--rlp-c);
-    transform: translateY(-1px);
+    background: var(--rlp-c);
+    border-color: #b45309;
+    box-shadow: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--rlp-c), 0 4px 12px rgba(217, 119, 6, .35);
+    transform: translateY(-2px) scale(1.05);
+    z-index: 5;
 }

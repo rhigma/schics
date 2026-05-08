@@ -21,10 +21,14 @@ $stmt = $pdo->query('
 ');
 $alle = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-$zellen = [];
+$zellen      = [];
+$themenCount = [];
 foreach ($alle as $e) {
     $e['themen']                                = schics_themen_in_text((string)($e['uebergreifende_themen'] ?? ''));
     $zellen[$e['fach']][(int)$e['jahrgang']][]  = $e;
+    foreach ($e['themen'] as $tid) {
+        $themenCount[$tid] = ($themenCount[$tid] ?? 0) + 1;
+    }
 }
 $themenListe = schics_uebergreifende_themen();
 ?>
@@ -84,11 +88,22 @@ $themenListe = schics_uebergreifende_themen();
             </table>
             </div>
 
-            <div class="theme-filter" role="group" aria-label="Übergreifende Themen hervorheben">
-                <span class="theme-filter-label">Übergreifende Themen hervorheben:</span>
-                <?php foreach ($themenListe as $thema): ?>
-                    <button type="button" class="theme-toggle" data-thema="<?= htmlspecialchars($thema['id']) ?>" aria-pressed="false"><?= htmlspecialchars($thema['label']) ?></button>
-                <?php endforeach; ?>
+            <div class="theme-filter">
+                <p class="theme-filter-label">Übergreifende Themen (Rahmenlehrplan Teil B) — anklicken, um SchiCs hervorzuheben, die das Thema aufgreifen.</p>
+                <div class="theme-pills" role="group" aria-label="Übergreifende Themen hervorheben">
+                    <?php foreach ($themenListe as $thema):
+                        $count = $themenCount[$thema['id']] ?? 0;
+                    ?>
+                        <button type="button"
+                                class="theme-pill<?= $count === 0 ? ' theme-pill--zero' : '' ?>"
+                                data-thema="<?= htmlspecialchars($thema['id']) ?>"
+                                aria-pressed="false">
+                            <span class="theme-pill-dot" aria-hidden="true"></span>
+                            <span class="theme-pill-label"><?= htmlspecialchars($thema['label']) ?></span>
+                            <span class="theme-pill-count"><?= (int)$count ?></span>
+                        </button>
+                    <?php endforeach; ?>
+                </div>
             </div>
         </section>
     </main>
@@ -96,9 +111,10 @@ $themenListe = schics_uebergreifende_themen();
     <script>
     (function () {
         const grid    = document.querySelector('.overview-grid');
-        const buttons = document.querySelectorAll('.theme-toggle[data-thema]');
+        const pills   = document.querySelectorAll('.theme-pill[data-thema]');
         const chips   = document.querySelectorAll('.overview-chip');
-        let active    = null;
+        if (!grid || !pills.length) return;
+        let active = null;
 
         function apply() {
             if (!active) {
@@ -109,21 +125,17 @@ $themenListe = schics_uebergreifende_themen();
             grid.classList.add('is-filtering');
             chips.forEach(c => {
                 const themen = (c.dataset.themen || '').split(' ').filter(Boolean);
-                const match  = themen.includes(active);
+                const match  = themen.indexOf(active) !== -1;
                 c.classList.toggle('is-match', match);
                 c.classList.toggle('is-dim',   !match);
             });
         }
 
-        buttons.forEach(b => {
-            b.addEventListener('click', () => {
-                const t = b.dataset.thema;
-                if (active === t) {
-                    active = null;
-                } else {
-                    active = t;
-                }
-                buttons.forEach(other => {
+        pills.forEach(p => {
+            p.addEventListener('click', function () {
+                const t = this.dataset.thema;
+                active = (active === t) ? null : t;
+                pills.forEach(other => {
                     const on = other.dataset.thema === active;
                     other.classList.toggle('is-active', on);
                     other.setAttribute('aria-pressed', on ? 'true' : 'false');
