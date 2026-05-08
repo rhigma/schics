@@ -3,15 +3,14 @@ require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/helpers.php';
 schics_require_level(SCHICS_LEVEL_READ);
 
-$pdo                 = schics_db();
-$fächer              = schics_faecher();
-[$jgMin, $jgMax]     = schics_jahrgang_range();
-$jahrgaenge          = range($jgMin, $jgMax);
-$canEdit             = schics_current_level() >= SCHICS_LEVEL_EDIT;
+$pdo             = schics_db();
+$fächer          = schics_faecher();
+[$jgMin, $jgMax] = schics_jahrgang_range();
+$jahrgaenge      = range($jgMin, $jgMax);
 
 // Aktuelle Versionen aller SchiCs laden — eine Zeile pro schic_id (höchste id).
 $stmt = $pdo->query('
-    SELECT c1.schic_id, c1.fach, c1.jahrgang, c1.thema, c1.status
+    SELECT c1.schic_id, c1.fach, c1.jahrgang, c1.thema
     FROM curricula c1
     INNER JOIN (
         SELECT schic_id, MAX(id) AS max_id
@@ -22,12 +21,10 @@ $stmt = $pdo->query('
 ');
 $alle = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// In Zellen [fach][jahrgang] = [ {schic_id, thema, status}, ... ] gruppieren.
 $zellen = [];
 foreach ($alle as $e) {
     $zellen[$e['fach']][(int)$e['jahrgang']][] = $e;
 }
-$gesamt = count($alle);
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -42,23 +39,10 @@ $gesamt = count($alle);
     <?php include __DIR__ . '/nav.php'; ?>
     <main class="container-app">
         <div class="page-header">
-            <div>
-                <h1>Schulinterne Curricula</h1>
-                <p class="text-muted" style="margin:0;">Übersicht: in welchen Fächern und Jahrgängen schon SchiCs vorliegen. Eine Kachel anklicken, um zu den Einträgen zu springen.</p>
-            </div>
+            <h1>Schulinterne Curricula</h1>
         </div>
 
         <section class="section">
-            <div class="overview-meta">
-                <span><strong><?= $gesamt ?></strong> SchiC<?= $gesamt === 1 ? '' : 's' ?> insgesamt</span>
-                <span class="overview-legend">
-                    <span class="overview-legend-swatch overview-legend-swatch--empty"></span> keiner
-                    <span class="overview-legend-swatch overview-legend-swatch--one"></span> 1
-                    <span class="overview-legend-swatch overview-legend-swatch--few"></span> 2–3
-                    <span class="overview-legend-swatch overview-legend-swatch--many"></span> 4+
-                </span>
-            </div>
-
             <div class="overview-scroll">
             <table class="overview-grid">
                 <thead>
@@ -75,48 +59,19 @@ $gesamt = count($alle);
                             <th class="overview-fach"><?= htmlspecialchars($fach) ?></th>
                             <?php foreach ($jahrgaenge as $jg):
                                 $eintraege = $zellen[$fach][(int)$jg] ?? [];
-                                $anzahl    = count($eintraege);
-                                $klasse    = 'overview-cell';
-                                if      ($anzahl === 0) { $klasse .= ' overview-cell--empty'; }
-                                elseif  ($anzahl === 1) { $klasse .= ' overview-cell--one'; }
-                                elseif  ($anzahl <=  3) { $klasse .= ' overview-cell--few'; }
-                                else                    { $klasse .= ' overview-cell--many'; }
-
-                                if ($anzahl === 1) {
-                                    $href = 'detail.php?schic_id=' . (int)$eintraege[0]['schic_id'];
-                                } elseif ($anzahl > 1) {
-                                    $href = 'suchen.php?fach=' . urlencode($fach) . '&jahrgang=' . (int)$jg;
-                                } elseif ($canEdit) {
-                                    $href = 'admin.php?fach=' . urlencode($fach) . '&jahrgang=' . (int)$jg;
-                                } else {
-                                    $href = null;
-                                }
                             ?>
-                                <td class="<?= $klasse ?>">
-                                    <?php if ($href !== null): ?>
-                                        <a class="overview-cell-link" href="<?= htmlspecialchars($href) ?>">
-                                            <span class="overview-cell-count"><?= $anzahl ?: '' ?></span>
-                                            <?php if ($anzahl > 0): ?>
-                                                <div class="overview-tooltip" role="tooltip">
-                                                    <div class="overview-tooltip-head"><?= htmlspecialchars($fach) ?> · Jg. <?= (int)$jg ?></div>
-                                                    <ul>
-                                                        <?php foreach ($eintraege as $e): ?>
-                                                            <li>
-                                                                <span class="overview-tooltip-thema"><?= htmlspecialchars($e['thema']) ?></span>
-                                                                <?= schics_status_badge($e['status']) ?>
-                                                            </li>
-                                                        <?php endforeach; ?>
-                                                    </ul>
-                                                </div>
-                                            <?php elseif ($canEdit): ?>
-                                                <div class="overview-tooltip" role="tooltip">
-                                                    <div class="overview-tooltip-head"><?= htmlspecialchars($fach) ?> · Jg. <?= (int)$jg ?></div>
-                                                    <p class="overview-tooltip-empty">Noch kein SchiC — neuen Eintrag anlegen.</p>
-                                                </div>
-                                            <?php endif; ?>
-                                        </a>
+                                <td class="overview-cell">
+                                    <?php if (!$eintraege): ?>
+                                        <span class="overview-empty" aria-hidden="true"></span>
                                     <?php else: ?>
-                                        <span class="overview-cell-link overview-cell-link--static"></span>
+                                        <div class="overview-chips">
+                                            <?php foreach ($eintraege as $e): ?>
+                                                <a class="overview-chip"
+                                                   href="detail.php?schic_id=<?= (int)$e['schic_id'] ?>"
+                                                   data-tooltip="<?= htmlspecialchars($e['thema']) ?>"
+                                                   aria-label="<?= htmlspecialchars($e['thema']) ?>"></a>
+                                            <?php endforeach; ?>
+                                        </div>
                                     <?php endif; ?>
                                 </td>
                             <?php endforeach; ?>

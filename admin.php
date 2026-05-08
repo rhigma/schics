@@ -79,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 function p(string $key): string { return htmlspecialchars($_POST[$key] ?? ''); }
 
-$values = $_POST ?: $_GET;
+$values = $_POST;
 ?>
 <!DOCTYPE html>
 <html lang="de">
