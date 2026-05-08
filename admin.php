@@ -7,7 +7,7 @@ $info = '';
 $infoClass = 'alert-info';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $required = ['version', 'status', 'stand', 'fach', 'jahrgang', 'thema'];
+    $required = ['stand', 'fach', 'jahrgang', 'thema'];
     foreach ($required as $field) {
         if (empty($_POST[$field])) {
             $info = 'Bitte alle Pflichtfelder ausfüllen.';
@@ -35,8 +35,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $pdo->prepare($sql);
             $stmt->execute([
                 ':schic_id'             => $next,
-                ':version'              => $_POST['version'],
-                ':status'               => $_POST['status'],
+                ':version'              => '1',
+                ':status'               => 'Entwurf',
                 ':stand'                => $_POST['stand'],
                 ':fach'                 => $_POST['fach'],
                 ':jahrgang'             => (int)$_POST['jahrgang'],
@@ -70,9 +70,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 function p(string $key): string { return htmlspecialchars($_POST[$key] ?? ''); }
-function selected(string $key, string $value): string {
-    return (($_POST[$key] ?? '') === $value) ? 'selected' : '';
-}
 
 $values = $_POST;
 ?>
@@ -101,15 +98,12 @@ $values = $_POST;
                 <h2 class="section-title">Verwaltung</h2>
                 <div class="row g-3">
                     <div class="col-md-3">
-                        <label class="form-label">Version *</label>
-                        <input type="text" name="version" class="form-control" value="<?= p('version') ?>" required>
+                        <label class="form-label">Version</label>
+                        <input type="text" class="form-control" value="1" disabled>
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label">Status *</label>
-                        <select name="status" class="form-select" required>
-                            <option value="Entwurf"     <?= selected('status','Entwurf') ?>>Entwurf</option>
-                            <option value="Beschlossen" <?= selected('status','Beschlossen') ?>>Beschlossen</option>
-                        </select>
+                        <label class="form-label">Status</label>
+                        <input type="text" class="form-control" value="Entwurf" disabled>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Reihenfolge</label>
