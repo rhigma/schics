@@ -154,6 +154,11 @@ $themenListe = schics_uebergreifende_themen();
         chips.forEach(c => {
             const tt = c.querySelector('.chip-tooltip');
             if (!tt) return;
+            // Tooltip ans <body> umhängen, weil ein transform auf .overview-chip:hover
+            // (und der :is-match-Effekt) sonst position:fixed in einen lokalen
+            // Containing-Block umwandelt — der Tooltip würde aus der Tabelle
+            // nach rechts wandern.
+            document.body.appendChild(tt);
             const show = () => { positionTooltip(c, tt); tt.classList.add('is-open'); };
             const hide = () => { tt.classList.remove('is-open'); };
             c.addEventListener('mouseenter', show);
