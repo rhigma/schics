@@ -19,6 +19,29 @@ if (!$eintrag) {
     exit;
 }
 
+// Nachbarn im selben Fach/Jahrgang ermitteln (Sortierung identisch zu sortieren.php).
+$nachbarStmt = $pdo->prepare('
+    SELECT c1.schic_id, c1.thema
+    FROM curricula c1
+    INNER JOIN (
+        SELECT schic_id, MAX(id) AS max_id
+        FROM curricula
+        GROUP BY schic_id
+    ) c2 ON c1.id = c2.max_id
+    WHERE c1.fach = :fach AND c1.jahrgang = :jahrgang
+    ORDER BY c1.reihenfolge ASC, c1.thema ASC
+');
+$nachbarStmt->execute([':fach' => $eintrag['fach'], ':jahrgang' => (int)$eintrag['jahrgang']]);
+$nachbarn = $nachbarStmt->fetchAll(PDO::FETCH_ASSOC);
+
+$pagerIdx = -1;
+foreach ($nachbarn as $i => $n) {
+    if ((int)$n['schic_id'] === $schic_id) { $pagerIdx = $i; break; }
+}
+$pagerPrev  = $pagerIdx > 0 ? $nachbarn[$pagerIdx - 1] : null;
+$pagerNext  = ($pagerIdx >= 0 && $pagerIdx < count($nachbarn) - 1) ? $nachbarn[$pagerIdx + 1] : null;
+$pagerTotal = count($nachbarn);
+
 $fach_links = [
     'Sachunterricht'              => 'Teil_C_Sachunterricht_2015_11_16.pdf',
     'Naturwissenschaften'         => 'Teil_C_Nawi_5-6_2015_11_16.pdf',
@@ -85,6 +108,44 @@ $flash         = schics_consume_flash();
             </div>
         </div>
 
+        <?php if ($pagerTotal > 1): ?>
+            <nav class="schic-pager" aria-label="Navigation innerhalb <?= htmlspecialchars($eintrag['fach']) ?> · Jahrgang <?= htmlspecialchars($eintrag['jahrgang']) ?>">
+                <?php if ($pagerPrev): ?>
+                    <a class="schic-pager__btn schic-pager__btn--prev"
+                       href="detail.php?schic_id=<?= (int)$pagerPrev['schic_id'] ?>"
+                       title="<?= htmlspecialchars($pagerPrev['thema']) ?>"
+                       data-pager-key="ArrowLeft">
+                        <span class="schic-pager__arrow" aria-hidden="true">←</span>
+                        <span class="schic-pager__label"><?= htmlspecialchars($pagerPrev['thema']) ?></span>
+                    </a>
+                <?php else: ?>
+                    <span class="schic-pager__btn schic-pager__btn--prev is-disabled" aria-disabled="true">
+                        <span class="schic-pager__arrow" aria-hidden="true">←</span>
+                        <span class="schic-pager__label text-muted">Anfang</span>
+                    </span>
+                <?php endif; ?>
+
+                <span class="schic-pager__pos text-muted">
+                    <?= $pagerIdx + 1 ?> / <?= $pagerTotal ?>
+                </span>
+
+                <?php if ($pagerNext): ?>
+                    <a class="schic-pager__btn schic-pager__btn--next"
+                       href="detail.php?schic_id=<?= (int)$pagerNext['schic_id'] ?>"
+                       title="<?= htmlspecialchars($pagerNext['thema']) ?>"
+                       data-pager-key="ArrowRight">
+                        <span class="schic-pager__label"><?= htmlspecialchars($pagerNext['thema']) ?></span>
+                        <span class="schic-pager__arrow" aria-hidden="true">→</span>
+                    </a>
+                <?php else: ?>
+                    <span class="schic-pager__btn schic-pager__btn--next is-disabled" aria-disabled="true">
+                        <span class="schic-pager__label text-muted">Ende</span>
+                        <span class="schic-pager__arrow" aria-hidden="true">→</span>
+                    </span>
+                <?php endif; ?>
+            </nav>
+        <?php endif; ?>
+
         <header class="print-header">
             <?= htmlspecialchars(schics_school_name()) ?> &ndash; Schulinternes Curriculum
         </header>
@@ -124,5 +185,16 @@ $flash         = schics_consume_flash();
             <?php endif; ?>
         </section>
     </main>
+    <script>
+        document.addEventListener('keydown', (e) => {
+            if (e.altKey || e.ctrlKey || e.metaKey) return;
+            const tag = (e.target && e.target.tagName) || '';
+            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+            if (e.target && e.target.isContentEditable) return;
+            if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+            const link = document.querySelector('.schic-pager__btn[data-pager-key="' + e.key + '"]');
+            if (link && link.href) { e.preventDefault(); window.location.href = link.href; }
+        });
+    </script>
 </body>
 </html>
