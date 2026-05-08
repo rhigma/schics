@@ -135,5 +135,6 @@ $values = $_POST;
         <?php $fachAktuell = $values['fach'] ?? ''; include __DIR__ . '/_rlp_panel.php'; ?>
     </main>
     <script src="assets/curriculum.js"></script>
+    <script src="assets/form-persist.js"></script>
 </body>
 </html>
