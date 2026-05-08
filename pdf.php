@@ -121,13 +121,18 @@ if (!is_dir($tmpDir)) {
 $defaultFontConfig = (new \Mpdf\Config\FontVariables())->getDefaults();
 $defaultConfigVars = (new \Mpdf\Config\ConfigVariables())->getDefaults();
 
+// Top/Bottom-Margins lassen Platz für SetHTMLHeader/Footer (5 mm Abstand vom
+// Seitenrand). Damit sitzt der Footer (Version · Status · Bearbeitet von)
+// immer am unteren Rand, egal wie voll die Zellen sind.
 $mpdf = new \Mpdf\Mpdf([
     'mode'          => 'utf-8',
     'format'        => 'A4-L',
     'margin_left'   => 10,
     'margin_right'  => 10,
-    'margin_top'    => 10,
-    'margin_bottom' => 10,
+    'margin_top'    => 14,
+    'margin_bottom' => 12,
+    'margin_header' => 5,
+    'margin_footer' => 5,
     'tempDir'       => $tmpDir,
     'fontDir'       => array_merge(
         $defaultConfigVars['fontDir'],
@@ -154,76 +159,114 @@ $mpdf->SetCreator('SchiCs');
 // vielen Stichpunkten) auf eine A4-Querseite passen. Bei wenig Inhalt
 // füllen die Mindesthöhen die Zellen aus, sodass die Seite nicht halbleer
 // wirkt.
+// Farbpalette wie auf der Webseite (--rlp-a/b/c). Die Eck-Buchstaben
+// werden in einem aufgehellten Ton ausgegeben statt mit opacity: mPDF
+// rendert opacity auf normalem Text nicht zuverlässig, ein vorgemischter
+// Farbwert sieht dagegen identisch aus.
 $css = <<<CSS
 body { font-family: berlintype, sans-serif; font-size: 8.5pt; color: #1f2937; }
 .page-header {
     font-size: 10pt; color: #555; text-align: center;
-    margin: 0 0 0.2cm; padding-bottom: 3pt; border-bottom: 0.5pt solid #ccc;
+    padding-bottom: 2pt; border-bottom: 0.4pt solid #ccc;
 }
 .page-footer {
     font-size: 8pt; color: #555; text-align: right;
-    margin: 0.15cm 0 0; padding-top: 2pt; border-top: 0.5pt solid #ccc;
+    padding-top: 2pt; border-top: 0.4pt solid #ccc;
 }
 table.head, table.grid {
     width: 100%; table-layout: fixed;
-    border-collapse: separate; border-spacing: 3pt;
+    border-collapse: separate;
 }
-table.head { margin: 0; border-spacing: 3pt 0; }
+/* Header-Zeile lehnt sich an die Word-Vorlage an: kräftige rote Außenkante,
+   feinere rote Trennlinien zwischen den Feldern, Labels schwarz und in
+   normaler Schreibweise (nicht uppercase). */
+table.head {
+    margin: 0; border-spacing: 0;
+    border: 1.8pt solid #c1121f;
+}
 table.head td { padding: 0; }
 .head-cell {
-    border: 1pt solid #94a3b8; padding: 4pt 6pt; font-size: 8.5pt;
-    background: #f6f7f9; vertical-align: middle; line-height: 1.2;
+    padding: 9pt 9pt; font-size: 9pt;
+    background: #ffffff; vertical-align: middle; line-height: 1.3;
+    border-right: 0.8pt solid #c1121f;
 }
+.head-cell-last { border-right: 0; }
 .head-label {
-    font-weight: bold; color: #4b5563; text-transform: uppercase;
-    font-size: 7pt; letter-spacing: 0.05em; margin-right: 3pt;
+    font-weight: bold; color: #1f2937;
+    font-size: 9pt; margin-right: 4pt;
 }
-table.grid { margin-top: 3pt; page-break-inside: avoid; }
+table.grid { margin-top: 4pt; border-spacing: 4pt; page-break-inside: avoid; }
+/* Zellhöhe wird über die innere Sub-Tabelle (.cf) verteilt: obere Zeile mit
+   Titel + Body, untere Zeile (cf-tag) mit dem Eck-Buchstaben. Mit
+   width/height:100% spannt sich .cf über die volle Zellfläche, sodass der
+   Tag immer am tatsächlichen Cell-Bottom landet — auch wenn mPDF die
+   Reihen unterschiedlich hoch rendert. */
 table.grid td.g {
-    border: 1.2pt solid #d1d5db;
-    padding: 4pt 7pt 5pt; vertical-align: top;
-    height: 3.4cm; line-height: 1.25;
+    border: 1.5pt solid #d1d5db;
+    padding: 0; vertical-align: top;
+    height: 4.15cm; line-height: 1.3;
 }
-table.grid td.g-tall2 { height: 6.8cm; } /* rowspan=2 — sprach, uebergr, kompet */
+table.grid td.g-tall2 { height: 8.3cm; } /* rowspan=2 — sprach, uebergr, kompet */
+table.cf {
+    width: 100%; height: 100%;
+    border-collapse: collapse; border-spacing: 0;
+}
+/* Explizite Höhe auf der Content-Row erzwingt, dass die zweite Row (Tag)
+   in den Restplatz unten fällt. mPDF respektiert height auf TDs zuverlässiger
+   als height:100% auf einer verschachtelten Tabelle. Werte sind empirisch:
+   knapp unter der gerenderten Zellhöhe (~35 mm normal, ~75 mm tall),
+   sodass der Tag möglichst nah an die untere Zellkante rutscht. */
+table.cf td.cf-content {
+    padding: 5pt 8pt 0pt 8pt; vertical-align: top;
+    height: 32mm;
+}
+.g-tall2 table.cf td.cf-content { height: 75mm; }
+table.cf td.cf-tag {
+    padding: 0pt 8pt 2pt 8pt; vertical-align: bottom;
+    font-size: 18pt; font-weight: bold; line-height: 1;
+}
 .cell-title {
-    font-size: 8pt; font-weight: bold; color: #1f2937;
-    margin: 0 0 3pt; line-height: 1.2;
+    font-size: 8.5pt; font-weight: bold; color: #1f2937;
+    margin: 0 0 4pt; line-height: 1.25;
 }
-.cell-tag {
-    font-weight: bold; font-size: 8pt;
-    margin-right: 3pt;
-}
-.cell-body { font-size: 8pt; line-height: 1.3; color: #374151; }
-.g--a           { border-color: #2563eb !important; background: #eff6ff; }
-.g--a .cell-tag { color: #2563eb; }
-.g--b           { border-color: #16a34a !important; background: #f0fdf4; }
-.g--b .cell-tag { color: #16a34a; }
-.g--c           { border-color: #d97706 !important; background: #fffbeb; }
-.g--c .cell-tag { color: #d97706; }
+.cell-body { font-size: 8pt; line-height: 1.4; color: #374151; }
+/* Eck-Buchstaben in vorgemischter heller Farbe (opacity rendert mPDF auf Text
+   nicht zuverlässig). */
+.g--a { border-color: #2563eb !important; background: #eff6ff; }
+.g--a .cf-tag { color: #9db9f6; }
+.g--b { border-color: #16a34a !important; background: #f0fdf4; }
+.g--b .cf-tag { color: #96d6ae; }
+.g--c { border-color: #d97706 !important; background: #fffbeb; }
+.g--c .cf-tag { color: #eec28f; }
 CSS;
 $mpdf->WriteHTML($css, \Mpdf\HTMLParserMode::HEADER_CSS);
 
-// Pro SchiC eine Seite — AddPage zwischen den Einträgen verhindert die
-// Phantom-Leerseite, die ein nachgestelltes "page-break-after: always" liefert.
+// Header (Schulname) ist auf jeder Seite gleich — einmal setzen reicht.
+// Footer (Version · Status · Bearbeitet von) variiert pro SchiC, deshalb
+// im Loop neu setzen. SetHTMLFooter wirkt auf die jeweils nächste Seite,
+// also vor AddPage aufrufen, damit die richtige Version unten steht.
 $schoolName = schics_school_name();
+$mpdf->SetHTMLHeader(
+    '<div class="page-header">' . htmlspecialchars($schoolName) . ' &ndash; Schulinternes Curriculum</div>'
+);
+
 foreach ($einträge as $i => $values) {
+    $footerParts = [
+        'Version ' . htmlspecialchars($values['version']),
+        'Status ' . htmlspecialchars($values['status']),
+    ];
+    if (!empty($values['bearbeitet_von'])) {
+        $footerParts[] = 'Bearbeitet von ' . htmlspecialchars($values['bearbeitet_von']);
+    }
+    $mpdf->SetHTMLFooter(
+        '<div class="page-footer">' . implode(' &middot; ', $footerParts) . '</div>'
+    );
+
     if ($i > 0) {
         $mpdf->AddPage();
     }
     ob_start();
-    ?>
-    <div class="page-header">
-        <?= htmlspecialchars($schoolName) ?> &ndash; Schulinternes Curriculum
-    </div>
-    <?php include __DIR__ . '/_curriculum_pdf.php'; ?>
-    <div class="page-footer">
-        Version <?= htmlspecialchars($values['version']) ?>
-        &middot; Status <?= htmlspecialchars($values['status']) ?>
-        <?php if (!empty($values['bearbeitet_von'])): ?>
-            &middot; Bearbeitet von <?= htmlspecialchars($values['bearbeitet_von']) ?>
-        <?php endif; ?>
-    </div>
-    <?php
+    include __DIR__ . '/_curriculum_pdf.php';
     $mpdf->WriteHTML(ob_get_clean(), \Mpdf\HTMLParserMode::HTML_BODY);
 }
 

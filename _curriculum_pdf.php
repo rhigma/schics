@@ -21,18 +21,26 @@ foreach (schics_curriculum_cells() as [$pos, $col, $title, $field]) {
     ];
 }
 
-// [A] / [B] / [C] als kurzer Präfix vor dem Titel — float:right haben mPDF-
-// Tabellenzellen nicht zuverlässig umgesetzt, deshalb dieser pragmatische Weg.
-// Die Zell-Klasse "g--a/b/c" liegt direkt auf dem <td>, weil ein verschachtelter
-// div mit height:100% in mPDF-Tabellen Border und Hintergrund nicht zieht.
+// Eck-Buchstaben werden über eine 2-zeilige Sub-Tabelle in der TD platziert:
+// obere Zeile (valign=top) trägt Titel + Body, untere Zeile (valign=bottom,
+// align=right) trägt den Tag. mPDF respektiert weder height:100% auf
+// verschachtelten Tabellen noch position:absolute innerhalb von TDs zuver-
+// lässig — der Trick ist die explizite height auf .cf-content im CSS, die
+// die obere Reihe so weit hochzieht, dass die Tag-Reihe in den Restplatz
+// unten fällt.
 $cellHtml = function (string $pos) use ($cells): string {
     $c = $cells[$pos];
     $body  = nl2br(htmlspecialchars($c['value']));
     $title = htmlspecialchars($c['title']);
     $tag   = strtoupper($c['col']);
     return
-        '<div class="cell-title"><span class="cell-tag">[' . $tag . ']</span> ' . $title . '</div>'
-        . '<div class="cell-body">' . $body . '</div>';
+        '<table class="cf" width="100%" height="100%"><tr height="100%">'
+        . '<td class="cf-content" valign="top">'
+        . '<div class="cell-title">' . $title . '</div>'
+        . '<div class="cell-body">' . $body . '</div>'
+        . '</td></tr><tr>'
+        . '<td class="cf-tag" align="right" valign="bottom">' . $tag . '</td>'
+        . '</tr></table>';
 };
 
 // Liefert die Klassen für ein <td>: Basis "g", optional "g-tall2", farb-
@@ -48,7 +56,7 @@ $cellClass = function (string $pos, string $extra = '') use ($cells): string {
         <td class="head-cell" width="13%"><span class="head-label">Jahrgang:</span> <?= htmlspecialchars((string)($values['jahrgang'] ?? '')) ?></td>
         <td class="head-cell" width="35%"><span class="head-label">Thema:</span> <?= htmlspecialchars((string)($values['thema'] ?? '')) ?></td>
         <td class="head-cell" width="15%"><span class="head-label">Umfang:</span> <?= htmlspecialchars((string)($values['umfang'] ?? '')) ?></td>
-        <td class="head-cell" width="15%"><span class="head-label">Stand:</span> <?= htmlspecialchars((string)($values['stand'] ?? '')) ?></td>
+        <td class="head-cell head-cell-last" width="15%"><span class="head-label">Stand:</span> <?= htmlspecialchars((string)($values['stand'] ?? '')) ?></td>
     </tr>
 </table>
 <table class="grid" cellspacing="0" cellpadding="0">
