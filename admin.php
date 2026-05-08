@@ -21,6 +21,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->beginTransaction();
             $next = (int)$pdo->query('SELECT COALESCE(MAX(schic_id), 0) FROM curricula')->fetchColumn() + 1;
 
+            // Sortierrang: niedrigstmögliche höchste Position innerhalb des
+            // gewählten Fachs/Jahrgangs, sodass neue SchiCs immer hinten landen.
+            $rangStmt = $pdo->prepare('SELECT COALESCE(MAX(reihenfolge), 0) + 1
+                                       FROM curricula
+                                       WHERE fach = :fach AND jahrgang = :jahrgang');
+            $rangStmt->execute([':fach' => $_POST['fach'], ':jahrgang' => (int)$_POST['jahrgang']]);
+            $reihenfolge = (int)$rangStmt->fetchColumn();
+
             $sql = 'INSERT INTO curricula
                 (schic_id, version, status, stand, fach, jahrgang, thema, umfang, reihenfolge,
                  "fächerverbindung", "heterogenität", schulprofil, lebensweltbezug, kompetenzen,
@@ -42,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':jahrgang'             => (int)$_POST['jahrgang'],
                 ':thema'                => $_POST['thema'],
                 ':umfang'               => $_POST['umfang']                ?? '',
-                ':reihenfolge'          => (int)($_POST['reihenfolge']     ?? 0),
+                ':reihenfolge'          => $reihenfolge,
                 ':fächerverbindung'     => $_POST['fächerverbindung']      ?? '',
                 ':heterogenität'        => $_POST['heterogenität']         ?? '',
                 ':schulprofil'          => $_POST['schulprofil']           ?? '',
@@ -104,10 +112,6 @@ $values = $_POST;
                     <div class="col-md-3">
                         <label class="form-label">Status</label>
                         <input type="text" class="form-control" value="Entwurf" disabled>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Reihenfolge</label>
-                        <input type="number" name="reihenfolge" class="form-control" value="<?= p('reihenfolge') ?>">
                     </div>
                 </div>
             </section>

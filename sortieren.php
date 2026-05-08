@@ -54,7 +54,17 @@ $fächer   = schics_faecher();
         </section>
 
         <?php if ($fach && $jahrgang !== ''):
-            $stmt = $pdo->prepare('SELECT id, thema FROM curricula WHERE fach = :fach AND jahrgang = :jahrgang ORDER BY reihenfolge ASC');
+            $stmt = $pdo->prepare('
+                SELECT c1.schic_id, c1.thema, c1.reihenfolge
+                FROM curricula c1
+                INNER JOIN (
+                    SELECT schic_id, MAX(id) AS max_id
+                    FROM curricula
+                    GROUP BY schic_id
+                ) c2 ON c1.id = c2.max_id
+                WHERE c1.fach = :fach AND c1.jahrgang = :jahrgang
+                ORDER BY c1.reihenfolge ASC, c1.thema ASC
+            ');
             $stmt->execute([':fach' => $fach, ':jahrgang' => (int)$jahrgang]);
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         ?>
@@ -63,7 +73,7 @@ $fächer   = schics_faecher();
                 <?php if ($rows): ?>
                     <ul id="sortable">
                         <?php foreach ($rows as $row): ?>
-                            <li class="sortable-item" data-id="<?= (int)$row['id'] ?>"><?= htmlspecialchars($row['thema']) ?></li>
+                            <li class="sortable-item" data-schic-id="<?= (int)$row['schic_id'] ?>"><?= htmlspecialchars($row['thema']) ?></li>
                         <?php endforeach; ?>
                     </ul>
                     <div style="margin-top:1rem; display:flex; align-items:center; gap:1rem;">
@@ -84,7 +94,7 @@ $fächer   = schics_faecher();
             new Sortable(list, { animation: 150 });
             document.getElementById('saveOrder').addEventListener('click', () => {
                 const order = [...list.querySelectorAll('li')].map((li, index) => ({
-                    id: parseInt(li.dataset.id, 10),
+                    schic_id: parseInt(li.dataset.schicId, 10),
                     reihenfolge: index + 1
                 }));
                 const status = document.getElementById('saveStatus');

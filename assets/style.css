@@ -370,6 +370,19 @@ textarea.form-control { min-height: 84px; }
     color: var(--color-muted);
     font-size: .88rem;
 }
+.table-app td.cell-snippet mark {
+    background: #fff3a3;
+    color: var(--color-text);
+    padding: 0 .15em;
+    border-radius: 2px;
+}
+.snippet-field {
+    color: var(--color-muted);
+    font-size: .8rem;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    margin-right: .25rem;
+}
 
 /* --- Alerts ------------------------------------------------------- */
 

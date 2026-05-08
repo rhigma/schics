@@ -41,16 +41,12 @@ if (!empty($_POST['jahrgang'])) {
     }
 }
 
-if (!empty($_POST['suchbegriff'])) {
-    $felder = [
-        'thema', 'kompetenzen', 'medienbildung', 'sprachbildung',
-        'übergreifende_themen', 'fächerverbindung', 'heterogenität',
-        'schulprofil', 'lebensweltbezug', 'kooperationen',
-        'leistungsbewertung', 'methoden',
-    ];
-    $teile = array_map(fn($f) => schics_quote_ident($f) . ' LIKE :such', $felder);
+$suchbegriff = trim($_POST['suchbegriff'] ?? '');
+if ($suchbegriff !== '') {
+    $felder = array_keys(schics_search_fields());
+    $teile  = array_map(fn($f) => schics_quote_ident($f) . ' LIKE :such', $felder);
     $where[] = '(' . implode(' OR ', $teile) . ')';
-    $params[':such'] = '%' . $_POST['suchbegriff'] . '%';
+    $params[':such'] = '%' . $suchbegriff . '%';
 }
 
 $sql = "
@@ -76,6 +72,19 @@ if (!$einträge) {
     exit;
 }
 ?>
+<?php
+$searchFields = schics_search_fields();
+$snippetFor = function (array $eintrag) use ($suchbegriff, $searchFields): string {
+    if ($suchbegriff === '') return '';
+    foreach ($searchFields as $col => $label) {
+        $snip = schics_snippet((string)($eintrag[$col] ?? ''), $suchbegriff);
+        if ($snip !== null) {
+            return '<span class="snippet-field">' . htmlspecialchars($label) . ':</span> ' . $snip;
+        }
+    }
+    return '';
+};
+?>
 <div class="text-muted mb-2" style="font-size:.85rem;"><?= count($einträge) ?> Treffer</div>
 <table class="table-app">
     <thead>
@@ -83,7 +92,7 @@ if (!$einträge) {
             <th>Fach</th>
             <th>Jg.</th>
             <th>Thema</th>
-            <th>Kompetenzen</th>
+            <th><?= $suchbegriff !== '' ? 'Treffer' : 'Kompetenzen' ?></th>
             <th>Status</th>
             <th>Version</th>
             <th>Stand</th>
@@ -97,7 +106,13 @@ if (!$einträge) {
                 <td>
                     <a href="detail.php?schic_id=<?= (int)$e['schic_id'] ?>"><?= htmlspecialchars($e['thema']) ?></a>
                 </td>
-                <td class="cell-snippet"><?= nl2br(htmlspecialchars($e['kompetenzen'])) ?></td>
+                <td class="cell-snippet">
+                    <?php if ($suchbegriff !== ''): ?>
+                        <?= $snippetFor($e) ?>
+                    <?php else: ?>
+                        <?= nl2br(htmlspecialchars($e['kompetenzen'])) ?>
+                    <?php endif; ?>
+                </td>
                 <td><?= schics_status_badge($e['status']) ?></td>
                 <td><?= htmlspecialchars($e['version']) ?></td>
                 <td class="text-muted"><?= htmlspecialchars($e['stand']) ?></td>

@@ -12,30 +12,31 @@ if (!is_array($data) || empty($data)) {
     exit;
 }
 
-// Eingabe streng validieren: jedes Element braucht eine ganzzahlige id
-// und eine ganzzahlige reihenfolge.
+// Eingabe streng validieren: jedes Element braucht eine ganzzahlige
+// schic_id und eine ganzzahlige reihenfolge. Der Sortierrang gilt für alle
+// Versionen eines SchiCs gemeinsam, daher wird per schic_id aktualisiert.
 $updates = [];
 foreach ($data as $item) {
-    if (!is_array($item) || !isset($item['id'], $item['reihenfolge'])) {
+    if (!is_array($item) || !isset($item['schic_id'], $item['reihenfolge'])) {
         http_response_code(400);
         echo 'Ungültiges Element.';
         exit;
     }
-    $id  = filter_var($item['id'], FILTER_VALIDATE_INT);
-    $ord = filter_var($item['reihenfolge'], FILTER_VALIDATE_INT);
-    if ($id === false || $ord === false) {
+    $schicId = filter_var($item['schic_id'], FILTER_VALIDATE_INT);
+    $ord     = filter_var($item['reihenfolge'], FILTER_VALIDATE_INT);
+    if ($schicId === false || $ord === false) {
         http_response_code(400);
-        echo 'IDs und Reihenfolge müssen ganze Zahlen sein.';
+        echo 'SchiC-IDs und Reihenfolge müssen ganze Zahlen sein.';
         exit;
     }
-    $updates[] = ['id' => $id, 'reihenfolge' => $ord];
+    $updates[] = ['schic_id' => $schicId, 'reihenfolge' => $ord];
 }
 
 try {
     $pdo->beginTransaction();
-    $stmt = $pdo->prepare('UPDATE curricula SET reihenfolge = :reihenfolge WHERE id = :id');
+    $stmt = $pdo->prepare('UPDATE curricula SET reihenfolge = :reihenfolge WHERE schic_id = :schic_id');
     foreach ($updates as $u) {
-        $stmt->execute([':id' => $u['id'], ':reihenfolge' => $u['reihenfolge']]);
+        $stmt->execute([':schic_id' => $u['schic_id'], ':reihenfolge' => $u['reihenfolge']]);
     }
     $pdo->commit();
     echo 'OK';

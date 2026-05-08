@@ -33,6 +33,60 @@ function schics_curriculum_cells(): array {
     ];
 }
 
+// Felder, die die Suche auf der Startseite durchsucht.
+// Schlüssel = DB-Spalte, Wert = lesbares Label für die Snippet-Anzeige.
+function schics_search_fields(): array {
+    return [
+        'thema'                => 'Thema',
+        'kompetenzen'          => 'Kompetenzen',
+        'sprachbildung'        => 'Sprachbildung',
+        'medienbildung'        => 'Medienbildung',
+        'methoden'             => 'Methoden',
+        'kooperationen'        => 'Kooperationen',
+        'übergreifende_themen' => 'Übergreifende Themen',
+        'fächerverbindung'     => 'Fächerverbindung',
+        'heterogenität'        => 'Heterogenität',
+        'schulprofil'          => 'Schulprofil',
+        'lebensweltbezug'      => 'Lebensweltbezug',
+        'leistungsbewertung'   => 'Leistungsbewertung',
+    ];
+}
+
+// Liefert ein HTML-Snippet rund um den ersten Vorkommen von $term in $text.
+// $contextWords Wörter davor und danach, Treffer in <mark>. Gibt null zurück,
+// wenn der Begriff nicht gefunden wurde. Inhalt wird escaped, das Markup
+// sicher konstruiert. Nutzt mb_*-Funktionen, fällt auf byte-basierte
+// stripos/substr zurück, wenn mbstring fehlt (lokal ohne Extension, Strato
+// liefert sie mit).
+function schics_snippet(string $text, string $term, int $contextWords = 8): ?string {
+    if ($term === '' || $text === '') return null;
+    $hasMb = function_exists('mb_stripos');
+    $pos = $hasMb ? mb_stripos($text, $term) : stripos($text, $term);
+    if ($pos === false) return null;
+
+    $termLen = $hasMb ? mb_strlen($term)              : strlen($term);
+    $before  = $hasMb ? mb_substr($text, 0, $pos)     : substr($text, 0, $pos);
+    $match   = $hasMb ? mb_substr($text, $pos, $termLen) : substr($text, $pos, $termLen);
+    $after   = $hasMb ? mb_substr($text, $pos + $termLen) : substr($text, $pos + $termLen);
+
+    $beforeWords = preg_split('/\s+/u', trim($before)) ?: [];
+    $afterWords  = preg_split('/\s+/u', trim($after))  ?: [];
+    if ($beforeWords === ['']) $beforeWords = [];
+    if ($afterWords  === ['']) $afterWords  = [];
+
+    $prefix      = count($beforeWords) > $contextWords ? '… ' : '';
+    $suffix      = count($afterWords)  > $contextWords ? ' …' : '';
+    $beforeSnip  = implode(' ', array_slice($beforeWords, -$contextWords));
+    $afterSnip   = implode(' ', array_slice($afterWords, 0, $contextWords));
+
+    $html  = $prefix !== '' ? $prefix : '';
+    if ($beforeSnip !== '') $html .= htmlspecialchars($beforeSnip) . ' ';
+    $html .= '<mark>' . htmlspecialchars($match) . '</mark>';
+    if ($afterSnip  !== '') $html .= ' ' . htmlspecialchars($afterSnip);
+    $html .= $suffix;
+    return $html;
+}
+
 // Pfade zu den Berliner/Brandenburger Rahmenlehrplänen im rlps/-Ordner.
 // Teil A und B sind allgemeingültig, Teil C ist fachspezifisch.
 // Für Fächer ohne passenden Teil C (z. B. Sport) liefert das Mapping null.

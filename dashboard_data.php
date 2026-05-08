@@ -18,7 +18,15 @@ $fachfilter     = trim($_GET['fach'] ?? '');
 $jahrgangfilter = trim($_GET['jahrgang'] ?? '');
 
 $feldQuoted = schics_quote_ident($feld);
-$sql = "SELECT * FROM curricula WHERE $feldQuoted IS NOT NULL AND $feldQuoted != ''";
+$sql = "
+    SELECT c1.*
+    FROM curricula c1
+    INNER JOIN (
+        SELECT schic_id, MAX(id) AS max_id
+        FROM curricula
+        GROUP BY schic_id
+    ) c2 ON c1.id = c2.max_id
+    WHERE $feldQuoted IS NOT NULL AND $feldQuoted != ''";
 $params = [];
 
 if ($suchwert !== '') {

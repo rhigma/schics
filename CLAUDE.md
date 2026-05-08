@@ -63,7 +63,9 @@ Note: `admin.php` is the "new SchiC entry" form (EDIT-level), despite the filena
 - Content-column names that come from `$_GET`/`$_POST` (only `dashboard_data.php`) MUST be validated against `schics_content_fields()` before being interpolated into SQL.
 - `bearbeitet_von` is **optional**. Forms must not mark it `required`; views must guard with `if (!empty(...))` before rendering.
 - Write endpoints validate IDs as integers (`(int)` cast or `filter_var(... FILTER_VALIDATE_INT)`).
-- `admin.php` (new entry) computes `nextSchicId = MAX(schic_id) + 1` inside an explicit `beginTransaction()` to avoid the read-then-insert race.
+- `admin.php` (new entry) computes `nextSchicId = MAX(schic_id) + 1` inside an explicit `beginTransaction()` to avoid the read-then-insert race. The `reihenfolge` is also computed server-side (`MAX(reihenfolge)+1` within the same `fach`/`jahrgang`) — never let it come from the form.
+- `reihenfolge` is a per-SchiC property, not per-version. All versions of the same `schic_id` share the rank. `update_reihenfolge.php` therefore updates by `schic_id` (not `id`), and `neue_version.php` carries the rank forward from the existing version line. `sortieren.php` and the cross-section views (`dashboard_data.php`, `ajax_suche.php`) only show the latest version per `schic_id` (`INNER JOIN ... MAX(id)`).
+- Search highlighting on the start page (`ajax_suche.php`) renders a snippet via `schics_snippet()` (in `helpers.php`) when a `suchbegriff` is set. Searched fields live in `schics_search_fields()` — keep that list in sync if you add searchable columns.
 - The schema migration (`schics_db_migrate()` in `db.php`) runs on every connection — keep it idempotent. Currently it drops obsolete `gremium_*` columns and normalises stale `status` values to `Entwurf`.
 
 ### Things not to do

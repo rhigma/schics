@@ -29,6 +29,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (!$info) {
+        // Rang ist eine SchiC-Eigenschaft, nicht versionsspezifisch:
+        // bestehenden Wert der Versionslinie übernehmen.
+        $rangStmt = $pdo->prepare('SELECT reihenfolge FROM curricula WHERE schic_id = ? ORDER BY id DESC LIMIT 1');
+        $rangStmt->execute([(int)$_POST['schic_id']]);
+        $reihenfolge = (int)($rangStmt->fetchColumn() ?: 0);
+
         $sql = 'INSERT INTO curricula
             (schic_id, version, status, stand, fach, jahrgang, thema, umfang, reihenfolge,
              "fächerverbindung", "heterogenität", schulprofil, lebensweltbezug, kompetenzen,
@@ -50,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ':jahrgang'             => (int)$_POST['jahrgang'],
             ':thema'                => $_POST['thema'],
             ':umfang'               => $_POST['umfang']                ?? '',
-            ':reihenfolge'          => (int)($_POST['reihenfolge']     ?? 0),
+            ':reihenfolge'          => $reihenfolge,
             ':fächerverbindung'     => $_POST['fächerverbindung']      ?? '',
             ':heterogenität'        => $_POST['heterogenität']         ?? '',
             ':schulprofil'          => $_POST['schulprofil']           ?? '',
@@ -118,8 +124,6 @@ $values = !empty($_POST) ? $_POST : ($vorlage ?: []);
                             <option value="Entwurf"     <?= $status === 'Entwurf'     ? 'selected' : '' ?>>Entwurf</option>
                             <option value="Beschlossen" <?= $status === 'Beschlossen' ? 'selected' : '' ?>>Beschlossen</option>
                         </select></div>
-                    <div class="col-md-3"><label class="form-label">Reihenfolge</label>
-                        <input type="number" name="reihenfolge" class="form-control" value="<?= htmlspecialchars((string)($values['reihenfolge'] ?? '0')) ?>"></div>
                 </div>
             </section>
 
