@@ -116,6 +116,11 @@ if (!is_dir($tmpDir)) {
     @mkdir($tmpDir, 0775, true);
 }
 
+// Berlin Type als Hausschrift einbinden — die TTF-Dateien liegen im
+// projektgepflegten assets/fonts/, damit composer update sie nicht plättet.
+$defaultFontConfig = (new \Mpdf\Config\FontVariables())->getDefaults();
+$defaultConfigVars = (new \Mpdf\Config\ConfigVariables())->getDefaults();
+
 $mpdf = new \Mpdf\Mpdf([
     'mode'          => 'utf-8',
     'format'        => 'A4-L',
@@ -124,7 +129,17 @@ $mpdf = new \Mpdf\Mpdf([
     'margin_top'    => 10,
     'margin_bottom' => 10,
     'tempDir'       => $tmpDir,
-    'default_font'  => 'dejavusans',
+    'fontDir'       => array_merge(
+        $defaultConfigVars['fontDir'],
+        [__DIR__ . '/assets/fonts']
+    ),
+    'fontdata'      => $defaultFontConfig['fontdata'] + [
+        'berlintype' => [
+            'R' => 'BerlinTypeOffice-Regular.ttf',
+            'B' => 'BerlinTypeOffice-Bold.ttf',
+        ],
+    ],
+    'default_font'  => 'berlintype',
 ]);
 $mpdf->SetTitle($filename);
 $mpdf->SetCreator('SchiCs');
@@ -140,7 +155,7 @@ $mpdf->SetCreator('SchiCs');
 // füllen die Mindesthöhen die Zellen aus, sodass die Seite nicht halbleer
 // wirkt.
 $css = <<<CSS
-body { font-family: dejavusans, sans-serif; font-size: 8.5pt; color: #1f2937; }
+body { font-family: berlintype, sans-serif; font-size: 8.5pt; color: #1f2937; }
 .page-header {
     font-size: 10pt; color: #555; text-align: center;
     margin: 0 0 0.2cm; padding-bottom: 3pt; border-bottom: 0.5pt solid #ccc;
