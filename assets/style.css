@@ -581,10 +581,10 @@ textarea.form-control { min-height: 84px; }
 .cell-fachv    { grid-area: 2 / 1 / 3 / 2; }
 .cell-hetero   { grid-area: 2 / 2 / 3 / 3; }
 .cell-schulp   { grid-area: 2 / 3 / 3 / 4; }
-.cell-sprach   { grid-area: 2 / 4 / 3 / 5; }
+.cell-sprach   { grid-area: 2 / 4 / 4 / 5; }
 .cell-leben    { grid-area: 3 / 1 / 4 / 2; }
 .cell-kompet   { grid-area: 3 / 2 / 5 / 4; }
-.cell-uebergr  { grid-area: 3 / 4 / 6 / 5; }
+.cell-uebergr  { grid-area: 4 / 4 / 6 / 5; }
 .cell-kooper   { grid-area: 4 / 1 / 5 / 2; }
 .cell-lernber  { grid-area: 5 / 1 / 6 / 2; }
 .cell-medien   { grid-area: 5 / 2 / 6 / 3; }
@@ -647,7 +647,8 @@ textarea.form-control { min-height: 84px; }
 
 .curriculum-cell--edit { padding-bottom: 1.5rem; }
 .curriculum-cell--edit.cell-kompet  { min-height: 240px; }
-.curriculum-cell--edit.cell-uebergr { min-height: 360px; }
+.curriculum-cell--edit.cell-sprach  { min-height: 240px; }
+.curriculum-cell--edit.cell-uebergr { min-height: 240px; }
 
 .curriculum-cell__title label {
     font-weight: 600;
@@ -783,10 +784,11 @@ textarea.form-control { min-height: 84px; }
     .curriculum-sheet__head { border-width: 1.5pt; }
     .curriculum-cell { border-width: 1.5pt; }
 
-    /* Kompetenzen + Übergreifende dürfen nicht gestaucht werden,
-       aber auch nicht über die Seite hinausragen */
-    .cell-kompet { min-height: 5cm; }
-    .cell-uebergr { min-height: 7.5cm; }
+    /* Kompetenzen + rechte Spalte (Sprachbildung/Übergreifende) dürfen
+       nicht gestaucht werden, aber auch nicht über die Seite hinausragen */
+    .cell-kompet  { min-height: 5cm; }
+    .cell-sprach  { min-height: 3.75cm; }
+    .cell-uebergr { min-height: 3.75cm; }
 }
 
 /* --- PDF-Link (Rahmenlehrpläne) ----------------------------------- */
