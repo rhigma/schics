@@ -33,6 +33,26 @@ function schics_curriculum_cells(): array {
     ];
 }
 
+// Pfade zu den Berliner/Brandenburger Rahmenlehrplänen im rlps/-Ordner.
+// Teil A und B sind allgemeingültig, Teil C ist fachspezifisch.
+// Für Fächer ohne passenden Teil C (z. B. Sport) liefert das Mapping null.
+function schics_rlp_files(): array {
+    return [
+        'teil_a' => 'rlps/Teil_A_2015_11_16.pdf',
+        'teil_b' => 'rlps/Teil_B_2015_11_10.pdf',
+        'teil_c' => [
+            'Deutsch'                      => 'rlps/rlp-deutsch_1-10-teil-c.pdf',
+            'Mathematik'                   => 'rlps/rahmenlehrplan-teil-c_mathe-1-10.pdf',
+            'Englisch'                     => 'rlps/Teil_C_Mod_Fremdsprachen_2015_11_16.pdf',
+            'Sachunterricht'               => 'rlps/Teil_C_Sachunterricht_2015_11_16.pdf',
+            'Gesellschaftswissenschaften'  => 'rlps/Teil_C_Gesellschaftswissenschaften_2015_11_10.pdf',
+            'Naturwissenschaften'          => 'rlps/Teil_C_Nawi_5-6_2015_11_16.pdf',
+            'Musik'                        => 'rlps/Teil_C_Musik_2015_11_16.pdf',
+            'Kunst'                        => 'rlps/Teil_C_Kunst_2015_11_10.pdf',
+        ],
+    ];
+}
+
 // Ein einzelnes Feld in der Detailansicht: Label oben, Wert unten.
 // Mehrzeiliger Inhalt wird über nl2br dargestellt.
 function schics_field(string $label, ?string $value, bool $multiline = false): string {

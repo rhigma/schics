@@ -138,6 +138,8 @@ $values = !empty($_POST) ? $_POST : ($vorlage ?: []);
                 <a href="index.php" class="btn btn-secondary">Abbrechen</a>
             </div>
         </form>
+
+        <?php $fachAktuell = $values['fach'] ?? ''; include __DIR__ . '/_rlp_panel.php'; ?>
     </main>
     <script src="assets/curriculum.js"></script>
 </body>
