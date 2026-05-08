@@ -1037,3 +1037,59 @@ textarea.form-control { min-height: 84px; }
 .overview-grid tbody tr td:last-child .overview-chip[data-tooltip]:focus-visible::after {
     transform: translateX(0) translateY(0);
 }
+
+/* Filter-Leiste: Pills für die übergreifenden Themen aus RLP Teil B. */
+.theme-filter {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+    align-items: center;
+}
+.theme-filter-label {
+    font-size: .85rem;
+    color: var(--color-muted);
+    margin-right: .35rem;
+}
+.theme-toggle {
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    padding: .25rem .7rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    color: var(--color-text);
+    font-size: .82rem;
+    font-weight: 500;
+    line-height: 1.4;
+    cursor: pointer;
+    transition: background-color .12s, border-color .12s, color .12s, box-shadow .12s;
+}
+.theme-toggle:hover {
+    border-color: var(--color-border-strong);
+    background: var(--color-bg);
+}
+.theme-toggle:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(44, 82, 130, .25);
+}
+.theme-toggle.is-active {
+    background: var(--color-primary);
+    border-color: var(--color-primary-hover);
+    color: #fff;
+}
+
+/* Wenn ein Thema aktiv ist: nicht-passende Chips abdunkeln, Treffer betonen. */
+.overview-grid.is-filtering .overview-chip {
+    transition: opacity .15s, box-shadow .15s, transform .08s;
+}
+.overview-grid.is-filtering .overview-chip.is-dim {
+    opacity: .18;
+}
+.overview-grid.is-filtering .overview-chip.is-match {
+    box-shadow: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--rlp-c);
+    transform: translateY(-1px);
+}

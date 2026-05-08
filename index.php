@@ -10,7 +10,7 @@ $jahrgaenge      = range($jgMin, $jgMax);
 
 // Aktuelle Versionen aller SchiCs laden — eine Zeile pro schic_id (höchste id).
 $stmt = $pdo->query('
-    SELECT c1.schic_id, c1.fach, c1.jahrgang, c1.thema
+    SELECT c1.schic_id, c1.fach, c1.jahrgang, c1.thema, c1."übergreifende_themen" AS uebergreifende_themen
     FROM curricula c1
     INNER JOIN (
         SELECT schic_id, MAX(id) AS max_id
@@ -23,8 +23,10 @@ $alle = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $zellen = [];
 foreach ($alle as $e) {
-    $zellen[$e['fach']][(int)$e['jahrgang']][] = $e;
+    $e['themen']                                = schics_themen_in_text((string)($e['uebergreifende_themen'] ?? ''));
+    $zellen[$e['fach']][(int)$e['jahrgang']][]  = $e;
 }
+$themenListe = schics_uebergreifende_themen();
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -69,6 +71,7 @@ foreach ($alle as $e) {
                                                 <a class="overview-chip"
                                                    href="detail.php?schic_id=<?= (int)$e['schic_id'] ?>"
                                                    data-tooltip="<?= htmlspecialchars($e['thema']) ?>"
+                                                   data-themen="<?= htmlspecialchars(implode(' ', $e['themen'])) ?>"
                                                    aria-label="<?= htmlspecialchars($e['thema']) ?>"></a>
                                             <?php endforeach; ?>
                                         </div>
@@ -80,7 +83,55 @@ foreach ($alle as $e) {
                 </tbody>
             </table>
             </div>
+
+            <div class="theme-filter" role="group" aria-label="Übergreifende Themen hervorheben">
+                <span class="theme-filter-label">Übergreifende Themen hervorheben:</span>
+                <?php foreach ($themenListe as $thema): ?>
+                    <button type="button" class="theme-toggle" data-thema="<?= htmlspecialchars($thema['id']) ?>" aria-pressed="false"><?= htmlspecialchars($thema['label']) ?></button>
+                <?php endforeach; ?>
+            </div>
         </section>
     </main>
+
+    <script>
+    (function () {
+        const grid    = document.querySelector('.overview-grid');
+        const buttons = document.querySelectorAll('.theme-toggle[data-thema]');
+        const chips   = document.querySelectorAll('.overview-chip');
+        let active    = null;
+
+        function apply() {
+            if (!active) {
+                grid.classList.remove('is-filtering');
+                chips.forEach(c => c.classList.remove('is-match', 'is-dim'));
+                return;
+            }
+            grid.classList.add('is-filtering');
+            chips.forEach(c => {
+                const themen = (c.dataset.themen || '').split(' ').filter(Boolean);
+                const match  = themen.includes(active);
+                c.classList.toggle('is-match', match);
+                c.classList.toggle('is-dim',   !match);
+            });
+        }
+
+        buttons.forEach(b => {
+            b.addEventListener('click', () => {
+                const t = b.dataset.thema;
+                if (active === t) {
+                    active = null;
+                } else {
+                    active = t;
+                }
+                buttons.forEach(other => {
+                    const on = other.dataset.thema === active;
+                    other.classList.toggle('is-active', on);
+                    other.setAttribute('aria-pressed', on ? 'true' : 'false');
+                });
+                apply();
+            });
+        });
+    })();
+    </script>
 </body>
 </html>

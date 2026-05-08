@@ -143,6 +143,46 @@ function schics_rlp_files(): array {
     ];
 }
 
+// Übergreifende Themen aus Rahmenlehrplan Teil B. Pro Thema ein
+// kurzes Label für Toggle-Buttons und eine Liste von Such-Patterns,
+// die im Feld "übergreifende_themen" eines SchiCs gefunden werden
+// sollen (case-insensitiv, Substring). Reihenfolge wie im RLP.
+function schics_uebergreifende_themen(): array {
+    return [
+        ['id' => 'berufs',         'label' => 'Berufs- und Studienorientierung',           'patterns' => ['Berufs', 'Studienorient']],
+        ['id' => 'vielfalt',       'label' => 'Akzeptanz von Vielfalt',                    'patterns' => ['Vielfalt', 'Diversity']],
+        ['id' => 'demokratie',     'label' => 'Demokratiebildung',                         'patterns' => ['Demokratie']],
+        ['id' => 'europa',         'label' => 'Europabildung',                             'patterns' => ['Europa']],
+        ['id' => 'gesundheit',     'label' => 'Gesundheitsförderung',                      'patterns' => ['Gesundheit']],
+        ['id' => 'gewalt',         'label' => 'Gewaltprävention',                          'patterns' => ['Gewalt']],
+        ['id' => 'gleichstellung', 'label' => 'Gleichstellung der Geschlechter',           'patterns' => ['Gleichstellung', 'Gleichberechtigung', 'Gender']],
+        ['id' => 'interkulturell', 'label' => 'Interkulturelle Bildung',                   'patterns' => ['Interkultur']],
+        ['id' => 'kultur',         'label' => 'Kulturelle Bildung',                        'patterns' => ['Kulturelle Bildung']],
+        ['id' => 'mobilitaet',     'label' => 'Mobilitäts- und Verkehrsbildung',           'patterns' => ['Mobilität', 'Verkehr']],
+        ['id' => 'nachhaltig',     'label' => 'Nachhaltige Entwicklung / Globales Lernen', 'patterns' => ['Nachhaltig', 'globalen Zusammenh', 'globales Lernen']],
+        ['id' => 'sexual',         'label' => 'Sexualerziehung',                           'patterns' => ['Sexual', 'sexuell']],
+        ['id' => 'verbraucher',    'label' => 'Verbraucherbildung',                        'patterns' => ['Verbraucher']],
+    ];
+}
+
+// Liefert die IDs derjenigen übergreifenden Themen, deren Patterns
+// im Text vorkommen. Nutzt mb_stripos, fällt auf stripos zurück.
+function schics_themen_in_text(string $text): array {
+    if ($text === '') return [];
+    $hasMb  = function_exists('mb_stripos');
+    $found  = [];
+    foreach (schics_uebergreifende_themen() as $thema) {
+        foreach ($thema['patterns'] as $p) {
+            $pos = $hasMb ? mb_stripos($text, $p) : stripos($text, $p);
+            if ($pos !== false) {
+                $found[] = $thema['id'];
+                break;
+            }
+        }
+    }
+    return $found;
+}
+
 // Ein einzelnes Feld in der Detailansicht: Label oben, Wert unten.
 // Mehrzeiliger Inhalt wird über nl2br dargestellt.
 function schics_field(string $label, ?string $value, bool $multiline = false): string {
